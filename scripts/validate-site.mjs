@@ -26,6 +26,7 @@ for (const file of pages) {
   if (!/<main id="main"[^>]*>[\s\S]*?<h1>/.test(html)) throw new Error(`Missing initial content: ${relative}`);
   if (!/<meta name="description" content="[^"]+">/.test(html)) throw new Error(`Missing description: ${relative}`);
   if (!html.includes('property="og:image"')) throw new Error(`Missing image metadata: ${relative}`);
+  if (!html.includes('<meta name="google-site-verification" content="q3r2SLr-4UNs_6PULPqjv8PYGrFdWRCT8ec3pYtZzxQ">')) throw new Error(`Missing Search Console verification: ${relative}`);
   const noindex = html.includes('name="robots" content="noindex, follow"');
   if (noindex === sitemapUrls.has(url)) throw new Error(`Sitemap and indexability disagree: ${relative}`);
   for (const [, href] of html.matchAll(/href="([^"]+)"/g)) {

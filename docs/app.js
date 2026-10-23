@@ -142,6 +142,7 @@ function route() {
     if (parts[0] === "characters") return {section: "people"};
     if (parts[0] === "voyage") return {section: "voyage"};
     if (parts[0] === "graph") return {section: "graph", id: "achilles"};
+    if (["compare", "trojan-war"].includes(parts[0])) return {section: "static"};
   }
   const raw = decodeURIComponent(location.hash.slice(1) || "home");
   const [section, id] = raw.split("/");
@@ -206,7 +207,7 @@ function renderHome() {
       <a href="${SITE_BASE}graph/" class="explore-card"><span class="explore-symbol">⌘</span><h3>پیوندهای شخصیت‌ها</h3><p>شخصیت‌هایی که نامشان در بخش‌های مشترک آمده است.</p><span>دیدن گراف ←</span></a>
       <a href="${SITE_BASE}voyage/" class="explore-card"><span class="explore-symbol">◌</span><h3>ترتیب سفر اودیسئوس</h3><p>ترتیب رخدادهای سفر در کنار ترتیب روایت آن‌ها در ادیسه.</p><span>دیدن مسیر سفر ←</span></a>
     </div></section>
-    <section class="question-section section-wrap"><div><span class="eyebrow">یک سؤال رایج</span><h2>اسب تروا در ایلیاد است؟</h2><p>نه. ایلیاد با خاک‌سپاری هکتور تمام می‌شود؛ ادیسه در سرود ۸ از اسب چوبی یاد می‌کند.</p><a class="text-link" href="${chapterHref(chapterById.get("bridge-02"))}">دیدن بخش اسب چوبی ←</a></div><div class="quote-mark" aria-hidden="true">؟</div></section>
+    <section class="question-section section-wrap"><div><span class="eyebrow">یک سؤال رایج</span><h2>اسب تروا در ایلیاد است؟</h2><p>نه. ایلیاد با خاک‌سپاری هکتور تمام می‌شود؛ ادیسه در سرود ۸ از اسب چوبی یاد می‌کند.</p><a class="text-link" href="${chapterHref(chapterById.get("bridge-02"))}">دیدن بخش اسب چوبی ←</a><p><a class="text-link" href="${SITE_BASE}trojan-war/">پیش از ایلیاد چه شد؟ ←</a> · <a class="text-link" href="${SITE_BASE}compare/">تفاوت ایلیاد و ادیسه ←</a></p></div><div class="quote-mark" aria-hidden="true">؟</div></section>
   </div>`;
 }
 
@@ -222,7 +223,7 @@ function renderWorkIndex(work) {
   const intro = isIliad
     ? "ایلیاد داستان تمام جنگ تروا نیست. روایت از سال دهم جنگ و اختلاف آشیل با آگاممنون آغاز می‌شود و با خاک‌سپاری هکتور پایان می‌یابد. برای شروع، خشم آشیل را دنبال کن؛ سپس ببین کناره‌گیری او چه بر سر دو سپاه می‌آورد."
     : "ادیسه پس از جنگ تروا آغاز می‌شود، اما از نخستین روز سفر اودیسئوس شروع نمی‌کند. ابتدا خانهٔ او و سفر تلماخوس را می‌بینیم؛ اودیسئوس در سرودهای نهم تا دوازدهم گذشتهٔ سفرش را بازمی‌گوید و سپس روایت به بازگشت پنهانی‌اش می‌رسد.";
-  return `<div class="page-shell"><div class="page-heading"><span class="eyebrow">راهنمای آغاز</span><h1>${isIliad ? "ایلیاد چیست؟" : "ادیسه چیست؟"}</h1><p>${intro}</p></div><div class="story-toolbar"><a href="${SITE_BASE}story/" class="text-link">دیدن مسیر کامل دو منظومه ←</a><a href="${isIliad ? `${SITE_BASE}odyssey/` : `${SITE_BASE}iliad/`}" class="text-link">${isIliad ? "آشنایی با ادیسه" : "آشنایی با ایلیاد"} ←</a></div><section class="chapter-group"><div class="group-heading"><span class="group-mark ${work}">${isIliad ? "Ⅰ" : "Ⅱ"}</span><div><span class="eyebrow">۲۴ سرود</span><h2>${WORK_NAMES[work]}</h2></div></div><div class="chapter-list">${chapters.filter(c => c.work === work).map(chapterRow).join("")}</div></section></div>`;
+  return `<div class="page-shell"><div class="page-heading"><span class="eyebrow">راهنمای آغاز</span><h1>${isIliad ? "ایلیاد چیست؟" : "ادیسه چیست؟"}</h1><p>${intro}</p></div><div class="story-toolbar"><a href="${SITE_BASE}story/" class="text-link">دیدن مسیر کامل دو منظومه ←</a><a href="${isIliad ? `${SITE_BASE}odyssey/` : `${SITE_BASE}iliad/`}" class="text-link">${isIliad ? "آشنایی با ادیسه" : "آشنایی با ایلیاد"} ←</a><a href="${SITE_BASE}compare/" class="text-link">تفاوت دو منظومه ←</a>${isIliad ? `<a href="${SITE_BASE}trojan-war/" class="text-link">پیش‌زمینهٔ جنگ تروا ←</a>` : ""}</div><section class="chapter-group"><div class="group-heading"><span class="group-mark ${work}">${isIliad ? "Ⅰ" : "Ⅱ"}</span><div><span class="eyebrow">۲۴ سرود</span><h2>${WORK_NAMES[work]}</h2></div></div><div class="chapter-list">${chapters.filter(c => c.work === work).map(chapterRow).join("")}</div></section></div>`;
 }
 
 function chapterRow(c) {
