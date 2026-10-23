@@ -4,13 +4,15 @@ A Persian, right-to-left, static guide to Homer's *Iliad* and *Odyssey*. Readers
 
 ## Run locally
 
-Serve the `docs` directory with any static HTTP server:
+Build and preview the GitHub Pages output:
 
 ```sh
-python3 -m http.server 8000 --directory docs
+npm run build
+npm run check
+npm start
 ```
 
-Then open `http://localhost:8000`. The site is dependency-free. For GitHub Pages, select **Deploy from a branch**, branch `master`, folder `/docs` in repository Pages settings.
+Then open `http://localhost:8000/iliad-odyssey/`. The site is dependency-free. For GitHub Pages, select **Deploy from a branch**, branch `master`, folder `/docs` in repository Pages settings. Run `npm run build` after editing the content or the HTML shell, and commit the generated files in `docs`.
 
 ## Content structure
 
@@ -18,6 +20,8 @@ Then open `http://localhost:8000`. The site is dependency-free. For GitHub Pages
 - `docs/app.js` derives the reading route, local graph neighborhoods, search results, and progress from that content.
 - Reading guides provide context before difficult openings; inline names open short explanations on hover, keyboard focus, or the adjacent touch button, and link to character or place pages.
 - `docs/styles.css` contains the responsive RTL interface.
+- `scripts/build-site.mjs` turns the content into standalone HTML pages with readable URLs, page metadata, and `docs/sitemap.xml`.
+- `scripts/site-shell.html` is the shared HTML template, including the Google Search Console verification tag. Keep that tag in place after verification.
 
 The three bridge pages are editorial context, not books of either poem. The *Iliad* ends with Hector's funeral. The *Odyssey* mentions Achilles's funeral (book 24), recounts the wooden horse (book 8), and tells of Agamemnon's murder (including books 1 and 11). Other details come from later or separate Trojan War traditions and are identified on each bridge page. Odyssey books 9–12 are marked as Odysseus's retrospective account so readers can distinguish story chronology from Homer's presentation.
 
@@ -33,4 +37,8 @@ The Perseus Digital Library links provide a public reference text for each book.
 
 ## Verification
 
-Run `node --check docs/app.js`, `node --check docs/story.js`, and `node scripts/validate-content.mjs`. Browser interaction can be checked by serving `docs` locally.
+Run `npm run check` after building. This validates the content, generated pages, sitemap, and internal links. Browser interaction can be checked with `npm start`.
+
+## Google Search Console
+
+Add the URL-prefix property `https://alinazariii.github.io/iliad-odyssey/`. A custom domain is not required. After GitHub Pages publishes the current `docs` folder, verify ownership using the meta tag already in the shared HTML shell. Submit `https://alinazariii.github.io/iliad-odyssey/sitemap.xml` under Sitemaps, then use URL Inspection on the home page and selected book pages. Verification and sitemap submission require access to the owner's Google account.

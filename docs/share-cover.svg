@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#14252e"/><stop offset="1" stop-color="#263f47"/></linearGradient>
+    <linearGradient id="sun" x2="0" y2="1"><stop stop-color="#e9c783"/><stop offset="1" stop-color="#a98248"/></linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#sky)"/>
+  <circle cx="270" cy="245" r="145" fill="none" stroke="#a68d64" opacity=".28" stroke-width="2"/>
+  <circle cx="270" cy="245" r="107" fill="url(#sun)"/>
+  <path d="M0 475 Q110 456 220 475 T440 475 T660 475 T880 475 T1200 475" fill="none" stroke="#bfaa80" stroke-width="2" opacity=".4"/>
+  <path d="M0 526 Q110 507 220 526 T440 526 T660 526 T880 526 T1200 526" fill="none" stroke="#bfaa80" stroke-width="2" opacity=".28"/>
+  <path d="M160 343 L375 343 L344 375 L187 375 Z" fill="#101f28" stroke="#e2c28b" stroke-width="3"/>
+  <path d="M258 333 V169" stroke="#101f28" stroke-width="7"/>
+  <path d="M252 178 L252 327 L350 327 Z" fill="#f2ddb0" opacity=".88"/>
+  <path d="M244 206 L244 323 L184 323 Z" fill="#dcc291" opacity=".78"/>
+  <path d="M475 91 V540" stroke="#c7aa79" stroke-width="2" opacity=".38"/>
+  <text x="1100" y="256" direction="rtl" text-anchor="start" fill="#f4e9d1" font-family="Vazirmatn, Noto Naskh Arabic, sans-serif" font-size="78" font-weight="700">راهِ هومر</text>
+  <text x="1100" y="337" direction="rtl" text-anchor="start" fill="#d8c6a3" font-family="Vazirmatn, Noto Naskh Arabic, sans-serif" font-size="34">ایلیاد و ادیسه به فارسی</text>
+  <text x="1100" y="405" direction="rtl" text-anchor="start" fill="#b5afa3" font-family="Vazirmatn, Noto Naskh Arabic, sans-serif" font-size="25">داستان، شخصیت‌ها و راهنمای هر سرود</text>
+  <path d="M0 591 H1200" stroke="#b9a06f" stroke-width="2" opacity=".5"/>
+</svg>

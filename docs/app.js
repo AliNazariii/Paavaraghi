@@ -1,4 +1,4 @@
-import {chapters, characters, places, readingGuides, extraGlossary, sourceLink} from "./story.js?v=5";
+import {chapters, characters, characterDetails, places, readingGuides, extraGlossary, sourceLink} from "./story.js?v=6";
 
 const main = document.querySelector("#main");
 const searchDialog = document.querySelector("#search-dialog");
@@ -9,6 +9,7 @@ const characterById = new Map(characters.map(item => [item.id, item]));
 const placeById = new Map(places.map(item => [item.id, item]));
 const extraTermById = new Map(extraGlossary.map(item => [item.id, item]));
 const WORK_NAMES = {iliad: "ایلیاد", bridge: "میان دو داستان", odyssey: "ادیسه"};
+const SITE_BASE = new URL("./", import.meta.url).pathname;
 const STORAGE_KEY = "homer-path-read-v1";
 let readChapters = new Set();
 
@@ -21,10 +22,10 @@ const faNum = n => Number(n).toLocaleString("fa-IR");
 const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"})[char]);
 const normalize = value => String(value).toLowerCase().replace(/[يى]/g, "ی").replace(/ك/g, "ک").replace(/[\u064b-\u065f\u0670]/g, "").replace(/\u200c/g, " ").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 const chapterLabel = c => c.work === "bridge" ? `زمینهٔ ${faNum(c.number)}` : `سرود ${faNum(c.number)}`;
-const chapterHref = c => `#chapter/${c.id}`;
-const characterHref = c => `#person/${c.id}`;
-const placeHref = place => `#place/${place.id}`;
-const termHref = term => `#term/${term.id}`;
+const chapterHref = c => `${SITE_BASE}${c.work === "bridge" ? `context/${c.number}` : `${c.work}/book-${c.number}`}/`;
+const characterHref = c => `${SITE_BASE}characters/${c.id}/`;
+const placeHref = place => `${SITE_BASE}places/${place.id}/`;
+const termHref = term => `${SITE_BASE}terms/${term.id}/`;
 const smallBadge = (text, cls = "") => `<span class="badge ${cls}">${escapeHtml(text)}</span>`;
 const glossaryEntries = [
   ...characters.flatMap(person => [person.name, ...person.aliases].map(name => ({name, description: person.bio, href: characterHref(person)}))),
@@ -122,6 +123,26 @@ function saveProgress() {
 }
 
 function route() {
+  const path = decodeURIComponent(location.pathname.slice(SITE_BASE.length)).replace(/(?:index\.html)?\/?$/, "");
+  const parts = path.split("/").filter(Boolean);
+  if (!location.hash || location.hash === "#main") {
+    if (parts.length === 2 && ["iliad", "odyssey"].includes(parts[0]) && /^book-\d+$/.test(parts[1])) {
+      const id = `${parts[0]}-${String(Number(parts[1].slice(5))).padStart(2, "0")}`;
+      if (chapterById.has(id)) return {section: "chapter", id};
+    }
+    if (parts.length === 2 && parts[0] === "context") {
+      const id = `bridge-${String(Number(parts[1])).padStart(2, "0")}`;
+      if (chapterById.has(id)) return {section: "chapter", id};
+    }
+    if (parts.length === 2 && parts[0] === "characters" && characterById.has(parts[1])) return {section: "person", id: parts[1]};
+    if (parts.length === 2 && parts[0] === "places" && placeById.has(parts[1])) return {section: "place", id: parts[1]};
+    if (parts.length === 2 && parts[0] === "terms" && extraTermById.has(parts[1])) return {section: "term", id: parts[1]};
+    if (["iliad", "odyssey"].includes(parts[0])) return {section: "work", id: parts[0]};
+    if (parts[0] === "story") return {section: "story"};
+    if (parts[0] === "characters") return {section: "people"};
+    if (parts[0] === "voyage") return {section: "voyage"};
+    if (parts[0] === "graph") return {section: "graph", id: "achilles"};
+  }
   const raw = decodeURIComponent(location.hash.slice(1) || "home");
   const [section, id] = raw.split("/");
   if (section === "chapter" && chapterById.has(id)) return {section, id};
@@ -134,7 +155,7 @@ function route() {
 }
 
 function updateNav(section) {
-  const target = ["chapter", "place", "term"].includes(section) ? "story" : section === "person" ? "people" : section;
+  const target = ["chapter", "place", "term", "work"].includes(section) ? "story" : section === "person" ? "people" : section;
   document.querySelectorAll("[data-nav]").forEach(link => {
     link.classList.toggle("active", link.dataset.nav === target);
     if (link.dataset.nav === target) link.setAttribute("aria-current", "page");
@@ -147,9 +168,11 @@ function render() {
   updateNav(current.section);
   if (current.section === "home") main.innerHTML = renderHome();
   if (current.section === "story") main.innerHTML = renderStoryIndex();
+  if (current.section === "work") main.innerHTML = renderWorkIndex(current.id);
   if (current.section === "chapter") main.innerHTML = renderChapter(chapterById.get(current.id));
   if (current.section === "people") main.innerHTML = renderPeople();
   if (current.section === "person") main.innerHTML = renderPerson(characterById.get(current.id));
+  if (current.section === "person" && characterDetails[current.id]) main.querySelector(".person-hero p")?.insertAdjacentHTML("afterend", `<p>${escapeHtml(characterDetails[current.id])}</p>`);
   if (current.section === "place") main.innerHTML = renderPlace(placeById.get(current.id));
   if (current.section === "term") main.innerHTML = renderTerm(extraTermById.get(current.id));
   if (current.section === "graph") main.innerHTML = renderGraph(current.id);
@@ -166,32 +189,40 @@ function renderHome() {
       <div class="hero-content">
         <span class="eyebrow"><span class="eyebrow-line"></span> ایلیاد و ادیسهٔ هومر</span>
         <h1>از خشم آشیل<br>تا <em>بازگشت اودیسئوس</em></h1>
-        <div class="hero-actions"><a class="button button-primary" href="${chapterHref(next)}">${readChapters.size ? "ادامهٔ داستان" : "شروع داستان"} <span aria-hidden="true">←</span></a><a class="button button-outline" href="#story">دیدن همهٔ بخش‌ها</a></div>
+        <div class="hero-actions"><a class="button button-primary" href="${chapterHref(next)}">${readChapters.size ? "ادامهٔ داستان" : "شروع داستان"} <span aria-hidden="true">←</span></a><a class="button button-outline" href="${SITE_BASE}story/">دیدن همهٔ بخش‌ها</a></div>
         <div class="progress-summary"><span>${progressText()}</span><span>${faNum(percentage)}٪</span></div><div class="progress-bar"><span style="width:${percentage}%"></span></div>
       </div>
       <div class="hero-art" aria-hidden="true"><div class="art-ring ring-one"></div><div class="art-ring ring-two"></div><div class="art-sun"></div><div class="art-sea"></div><div class="art-ship"><span class="ship-mast"></span><span class="ship-sail"></span><span class="ship-hull"></span></div><span class="art-label top">ΤΡΟΙΑ</span><span class="art-label bottom">ΙΘΑΚΗ</span></div>
     </section>
     <section class="route-section section-wrap"><div class="section-intro"><span class="eyebrow">راهِ داستان</span><h2>ایلیاد، میان دو داستان، ادیسه</h2><p>سرودهای دو منظومه به‌ترتیب آمده‌اند. سه بخش زمینه هم میان آن‌هاست؛ کنار هرکدام آمده که چه چیز در متن هومر ذکر شده است.</p></div>
       <div class="route-cards">
-        <a class="route-card" href="#chapter/iliad-01"><span class="route-number">۰۱ / خشم</span><span class="route-icon" aria-hidden="true">⚔</span><h3>ایلیاد</h3><p>اختلاف آشیل، نبردهای تروا و دیداری که پس از مرگ هکتور رخ می‌دهد.</p><span class="route-meta">۲۴ سرود <span aria-hidden="true">←</span></span></a>
-        <a class="route-card route-bridge" href="#chapter/bridge-01"><span class="route-number">۰۲ / گذر</span><span class="route-icon" aria-hidden="true">◇</span><h3>میان دو داستان</h3><p>سه توضیح کوتاه دربارهٔ پایان جنگ و بازگشت‌ها؛ با اشاره به جای آن‌ها در ادیسه و روایت‌های دیگر.</p><span class="route-meta">۳ بخش زمینه <span aria-hidden="true">←</span></span></a>
-        <a class="route-card" href="#chapter/odyssey-01"><span class="route-number">۰۳ / خانه</span><span class="route-icon" aria-hidden="true">⛵</span><h3>ادیسه</h3><p>خانهٔ در انتظار، سفر پرخطر و بازگشتی که هنوز باید ثابت شود.</p><span class="route-meta">۲۴ سرود <span aria-hidden="true">←</span></span></a>
+        <a class="route-card" href="${SITE_BASE}iliad/"><span class="route-number">۰۱ / خشم</span><span class="route-icon" aria-hidden="true">⚔</span><h3>ایلیاد</h3><p>اختلاف آشیل، نبردهای تروا و دیداری که پس از مرگ هکتور رخ می‌دهد.</p><span class="route-meta">۲۴ سرود <span aria-hidden="true">←</span></span></a>
+        <a class="route-card route-bridge" href="${chapterHref(chapterById.get("bridge-01"))}"><span class="route-number">۰۲ / گذر</span><span class="route-icon" aria-hidden="true">◇</span><h3>میان دو داستان</h3><p>سه توضیح کوتاه دربارهٔ پایان جنگ و بازگشت‌ها؛ با اشاره به جای آن‌ها در ادیسه و روایت‌های دیگر.</p><span class="route-meta">۳ بخش زمینه <span aria-hidden="true">←</span></span></a>
+        <a class="route-card" href="${SITE_BASE}odyssey/"><span class="route-number">۰۳ / خانه</span><span class="route-icon" aria-hidden="true">⛵</span><h3>ادیسه</h3><p>خانهٔ در انتظار، سفر پرخطر و بازگشتی که هنوز باید ثابت شود.</p><span class="route-meta">۲۴ سرود <span aria-hidden="true">←</span></span></a>
       </div>
     </section>
     <section class="explore-section section-wrap"><div class="section-intro"><span class="eyebrow">بخش‌های دیگر</span><h2>شخصیت‌ها و ترتیب رویدادها</h2></div><div class="explore-grid">
-      <a href="#people" class="explore-card"><span class="explore-symbol">✳</span><h3>شخصیت‌ها</h3><p>معرفی کوتاه، نام‌های دیگر و بخش‌های مرتبط با هر شخصیت.</p><span>دیدن شخصیت‌ها ←</span></a>
-      <a href="#graph" class="explore-card"><span class="explore-symbol">⌘</span><h3>پیوندهای شخصیت‌ها</h3><p>شخصیت‌هایی که نامشان در بخش‌های مشترک آمده است.</p><span>دیدن گراف ←</span></a>
-      <a href="#voyage" class="explore-card"><span class="explore-symbol">◌</span><h3>ترتیب سفر اودیسئوس</h3><p>ترتیب رخدادهای سفر در کنار ترتیب روایت آن‌ها در ادیسه.</p><span>دیدن مسیر سفر ←</span></a>
+      <a href="${SITE_BASE}characters/" class="explore-card"><span class="explore-symbol">✳</span><h3>شخصیت‌ها</h3><p>معرفی کوتاه، نام‌های دیگر و بخش‌های مرتبط با هر شخصیت.</p><span>دیدن شخصیت‌ها ←</span></a>
+      <a href="${SITE_BASE}graph/" class="explore-card"><span class="explore-symbol">⌘</span><h3>پیوندهای شخصیت‌ها</h3><p>شخصیت‌هایی که نامشان در بخش‌های مشترک آمده است.</p><span>دیدن گراف ←</span></a>
+      <a href="${SITE_BASE}voyage/" class="explore-card"><span class="explore-symbol">◌</span><h3>ترتیب سفر اودیسئوس</h3><p>ترتیب رخدادهای سفر در کنار ترتیب روایت آن‌ها در ادیسه.</p><span>دیدن مسیر سفر ←</span></a>
     </div></section>
-    <section class="question-section section-wrap"><div><span class="eyebrow">یک سؤال رایج</span><h2>اسب تروا در ایلیاد است؟</h2><p>نه. ایلیاد با خاک‌سپاری هکتور تمام می‌شود؛ ادیسه در سرود ۸ از اسب چوبی یاد می‌کند.</p><a class="text-link" href="#chapter/bridge-02">دیدن بخش اسب چوبی ←</a></div><div class="quote-mark" aria-hidden="true">؟</div></section>
+    <section class="question-section section-wrap"><div><span class="eyebrow">یک سؤال رایج</span><h2>اسب تروا در ایلیاد است؟</h2><p>نه. ایلیاد با خاک‌سپاری هکتور تمام می‌شود؛ ادیسه در سرود ۸ از اسب چوبی یاد می‌کند.</p><a class="text-link" href="${chapterHref(chapterById.get("bridge-02"))}">دیدن بخش اسب چوبی ←</a></div><div class="quote-mark" aria-hidden="true">؟</div></section>
   </div>`;
 }
 
 function renderStoryIndex() {
   return `<div class="page-shell"><div class="page-heading"><span class="eyebrow">مسیر خواندن</span><h1>فهرست داستان</h1><p>پس از سرودهای ایلیاد، سه بخشِ زمینه و سپس سرودهای ادیسه آمده‌اند. بخش‌های زمینه سرودهای هومر نیستند؛ جای اشاره‌های ادیسه و روایت‌های دیگر در هر بخش مشخص شده است.</p></div>
-    <div class="story-toolbar"><span>${progressText()}</span><a href="#voyage" class="text-link">دیدن ترتیب سفر اودیسئوس ←</a></div>
+    <div class="story-toolbar"><span>${progressText()}</span><a href="${SITE_BASE}voyage/" class="text-link">دیدن ترتیب سفر اودیسئوس ←</a></div>
     ${["iliad", "bridge", "odyssey"].map(work => `<section class="chapter-group" id="${work}"><div class="group-heading"><span class="group-mark ${work}">${work === "iliad" ? "Ⅰ" : work === "bridge" ? "◇" : "Ⅱ"}</span><div><span class="eyebrow">${work === "bridge" ? "مرز روایت‌ها" : "۲۴ سرود"}</span><h2>${WORK_NAMES[work]}</h2></div></div><div class="chapter-list">${chapters.filter(c => c.work === work).map(c => chapterRow(c)).join("")}</div></section>`).join("")}
   </div>`;
+}
+
+function renderWorkIndex(work) {
+  const isIliad = work === "iliad";
+  const intro = isIliad
+    ? "ایلیاد داستان تمام جنگ تروا نیست. روایت از سال دهم جنگ و اختلاف آشیل با آگاممنون آغاز می‌شود و با خاک‌سپاری هکتور پایان می‌یابد. برای شروع، خشم آشیل را دنبال کن؛ سپس ببین کناره‌گیری او چه بر سر دو سپاه می‌آورد."
+    : "ادیسه پس از جنگ تروا آغاز می‌شود، اما از نخستین روز سفر اودیسئوس شروع نمی‌کند. ابتدا خانهٔ او و سفر تلماخوس را می‌بینیم؛ اودیسئوس در سرودهای نهم تا دوازدهم گذشتهٔ سفرش را بازمی‌گوید و سپس روایت به بازگشت پنهانی‌اش می‌رسد.";
+  return `<div class="page-shell"><div class="page-heading"><span class="eyebrow">راهنمای آغاز</span><h1>${isIliad ? "ایلیاد چیست؟" : "ادیسه چیست؟"}</h1><p>${intro}</p></div><div class="story-toolbar"><a href="${SITE_BASE}story/" class="text-link">دیدن مسیر کامل دو منظومه ←</a><a href="${isIliad ? `${SITE_BASE}odyssey/` : `${SITE_BASE}iliad/`}" class="text-link">${isIliad ? "آشنایی با ادیسه" : "آشنایی با ایلیاد"} ←</a></div><section class="chapter-group"><div class="group-heading"><span class="group-mark ${work}">${isIliad ? "Ⅰ" : "Ⅱ"}</span><div><span class="eyebrow">۲۴ سرود</span><h2>${WORK_NAMES[work]}</h2></div></div><div class="chapter-list">${chapters.filter(c => c.work === work).map(chapterRow).join("")}</div></section></div>`;
 }
 
 function chapterRow(c) {
@@ -206,7 +237,7 @@ function renderChapter(c) {
   const source = sourceLink(c);
   const guide = readingGuides[c.id];
   const relatedQuestions = questions.filter(q => q.chapterId === c.id);
-  return `<div class="reader-shell"><div class="reader-top"><a class="back-link" href="#story">→ فهرست داستان</a><div class="reader-count">بخش ${faNum(index + 1)} از ${faNum(chapters.length)}</div></div>
+  return `<div class="reader-shell"><div class="reader-top"><a class="back-link" href="${SITE_BASE}story/">→ فهرست داستان</a><div class="reader-count">بخش ${faNum(index + 1)} از ${faNum(chapters.length)}</div></div>
     <div class="reader-layout"><aside class="reader-sidebar"><div class="sidebar-label">مسیر خواندن</div>${["iliad", "bridge", "odyssey"].map(work => `<div class="sidebar-group"><h3>${WORK_NAMES[work]}</h3>${chapters.filter(item => item.work === work).map(item => `<a href="${chapterHref(item)}" class="sidebar-item ${item.id === c.id ? "current" : ""}" ${item.id === c.id ? 'aria-current="page"' : ""}><span>${item.work === "bridge" ? "◇" : faNum(item.number)}</span>${escapeHtml(item.title)}${readChapters.has(item.id) ? '<i aria-label="خوانده‌شده">✓</i>' : ""}</a>`).join("")}</div>`).join("")}</aside>
     <article class="reader-article"><div class="chapter-kicker">${smallBadge(WORK_NAMES[c.work], c.work)}<span>${chapterLabel(c)}</span></div><h1>${escapeHtml(c.title)}</h1>
       ${guide ? `<section class="reading-guide" aria-label="راهنمای شروع این سرود"><h2>قبل از خواندن این سرود</h2><p class="guide-hint">روی اسم‌های نقطه‌چین مکث کن یا علامت «؟» را بزن؛ خودِ اسم به صفحهٔ کاملش می‌رود.</p><div class="guide-step"><strong>پیش از این چه شده؟</strong><p>${renderAnnotated(guide.before)}</p></div><div class="guide-step"><strong>حالا کجای داستانیم؟</strong><p>${renderAnnotated(guide.scene)}</p></div><div class="guide-step"><strong>فعلاً چه چیزی را دنبال کنم؟</strong><p>${renderAnnotated(guide.focus)}</p></div></section>` : ""}
@@ -219,7 +250,7 @@ function renderChapter(c) {
       <div class="source-line"><span>جایگاه در روایت: ${escapeHtml(c.source.replace(/\d+/g, number => faNum(Number(number))))}</span>${source ? `<a href="${source}" target="_blank" rel="noopener noreferrer">${c.work === "bridge" ? "دیدن اشاره در ادیسه ↗" : "دیدن متن مرجع ↗"}</a>` : ""}</div>
       <button class="mark-read ${readChapters.has(c.id) ? "is-read" : ""}" data-mark-read="${c.id}" type="button">${readChapters.has(c.id) ? "✓ خوانده شد — برای برداشتن علامت بزن" : "✓ این بخش را خواندم"}</button>
       <nav class="reader-pager" aria-label="بخش‌های مجاور">${prev ? `<a href="${chapterHref(prev)}"><small>بخش قبلی</small><strong>→ ${escapeHtml(prev.title)}</strong></a>` : `<span></span>`}${next ? `<a href="${chapterHref(next)}"><small>بخش بعدی</small><strong>${escapeHtml(next.title)} ←</strong></a>` : `<span></span>`}</nav>
-    </article><aside class="context-sidebar"><div class="context-card"><span class="eyebrow">در این نقطه</span><h2>${WORK_NAMES[c.work]}</h2><p>${chapterLabel(c)} · بخش ${faNum(index + 1)} از ${faNum(chapters.length)}</p><div class="context-progress"><span style="height:${Math.max(4, (index + 1) / chapters.length * 100)}%"></span></div></div><div class="context-card muted"><h2>بعد چه می‌شود؟</h2><p>${next ? escapeHtml(next.title) : "به پایان مسیر رسیده‌ای."}</p>${next ? `<a class="text-link" href="${chapterHref(next)}">ادامه بده ←</a>` : `<a class="text-link" href="#home">بازگشت به آغاز ←</a>`}</div></aside></div></div>`;
+    </article><aside class="context-sidebar"><div class="context-card"><span class="eyebrow">در این نقطه</span><h2>${WORK_NAMES[c.work]}</h2><p>${chapterLabel(c)} · بخش ${faNum(index + 1)} از ${faNum(chapters.length)}</p><div class="context-progress"><span style="height:${Math.max(4, (index + 1) / chapters.length * 100)}%"></span></div></div><div class="context-card muted"><h2>بعد چه می‌شود؟</h2><p>${next ? escapeHtml(next.title) : "به پایان مسیر رسیده‌ای."}</p>${next ? `<a class="text-link" href="${chapterHref(next)}">ادامه بده ←</a>` : `<a class="text-link" href="${SITE_BASE}">بازگشت به آغاز ←</a>`}</div></aside></div></div>`;
 }
 
 function renderPeople() {
@@ -230,18 +261,18 @@ function renderPeople() {
 function renderPerson(person) {
   const appearances = chapters.filter(c => c.characters.includes(person.id));
   const related = characters.map(other => ({person: other, shared: chapters.filter(c => c.characters.includes(person.id) && c.characters.includes(other.id)).length})).filter(item => item.person.id !== person.id && item.shared).sort((a,b) => b.shared - a.shared).slice(0, 8);
-  return `<div class="page-shell person-detail"><a class="back-link" href="#people">→ همهٔ شخصیت‌ها</a><div class="person-hero"><span class="person-big-monogram" aria-hidden="true">${escapeHtml(person.name[0])}</span><div><span class="eyebrow">${escapeHtml(person.group)}</span><h1>${escapeHtml(person.name)}</h1><p>${escapeHtml(person.bio)}</p>${person.aliases.length ? `<div class="aliases">نام‌های دیگر: ${person.aliases.map(escapeHtml).join("، ")}</div>` : ""}</div></div><div class="person-detail-grid"><section><h2>در کدام بخش‌ها نامش آمده؟</h2><div class="chapter-list compact">${appearances.map(chapterRow).join("")}</div></section><aside><div class="context-card"><h2>پیوندهای داستانی</h2><p>نام این شخصیت‌ها در یک یا چند بخش مشترک آمده است.</p><div class="related-list">${related.map(item => `<a href="${characterHref(item.person)}">${escapeHtml(item.person.name)} <span>${faNum(item.shared)} بخش مشترک ←</span></a>`).join("")}</div><a class="button button-dark" href="#graph/${person.id}">دیدن در گراف</a></div></aside></div></div>`;
+  return `<div class="page-shell person-detail"><a class="back-link" href="${SITE_BASE}characters/">→ همهٔ شخصیت‌ها</a><div class="person-hero"><span class="person-big-monogram" aria-hidden="true">${escapeHtml(person.name[0])}</span><div><span class="eyebrow">${escapeHtml(person.group)}</span><h1>${escapeHtml(person.name)}</h1><p>${escapeHtml(person.bio)}</p>${person.aliases.length ? `<div class="aliases">نام‌های دیگر: ${person.aliases.map(escapeHtml).join("، ")}</div>` : ""}</div></div><div class="person-detail-grid"><section><h2>در کدام بخش‌ها نامش آمده؟</h2><div class="chapter-list compact">${appearances.map(chapterRow).join("")}</div></section><aside><div class="context-card"><h2>پیوندهای داستانی</h2><p>نام این شخصیت‌ها در یک یا چند بخش مشترک آمده است.</p><div class="related-list">${related.map(item => `<a href="${characterHref(item.person)}">${escapeHtml(item.person.name)} <span>${faNum(item.shared)} بخش مشترک ←</span></a>`).join("")}</div><a class="button button-dark" href="${SITE_BASE}graph/#graph/${person.id}">دیدن در گراف</a></div></aside></div></div>`;
 }
 
 function renderPlace(place) {
   const appearances = chapters.filter(c => c.place === place.id);
-  return `<div class="page-shell place-detail"><a class="back-link" href="#story">→ فهرست داستان</a><div class="place-hero"><span class="eyebrow">جای داستان</span><h1>${escapeHtml(place.name)}</h1><p>${escapeHtml(place.bio)}</p></div><section class="place-appearances"><h2>در کدام بخش‌ها می‌بینیم؟</h2><div class="chapter-list compact">${appearances.map(chapterRow).join("")}</div></section></div>`;
+  return `<div class="page-shell place-detail"><a class="back-link" href="${SITE_BASE}story/">→ فهرست داستان</a><div class="place-hero"><span class="eyebrow">جای داستان</span><h1>${escapeHtml(place.name)}</h1><p>${escapeHtml(place.bio)}</p></div><section class="place-appearances"><h2>در کدام بخش‌ها می‌بینیم؟</h2><div class="chapter-list compact">${appearances.map(chapterRow).join("")}</div></section></div>`;
 }
 
 function renderTerm(term) {
   const questionChapters = new Set(questions.filter(q => `${q.question} ${q.answer}`.includes(term.name)).map(q => q.chapterId));
   const appearances = chapters.filter(c => questionChapters.has(c.id) || `${c.title} ${c.recap} ${c.why} ${Object.values(readingGuides[c.id] || {}).join(" ")}`.includes(term.name));
-  return `<div class="page-shell place-detail"><a class="back-link" href="#story">→ فهرست داستان</a><div class="place-hero"><span class="eyebrow">نام و مفهوم</span><h1>${escapeHtml(term.name)}</h1><p>${escapeHtml(term.description)}</p></div>${appearances.length ? `<section class="place-appearances"><h2>در کدام بخش‌ها نامش آمده؟</h2><div class="chapter-list compact">${appearances.map(chapterRow).join("")}</div></section>` : ""}</div>`;
+  return `<div class="page-shell place-detail"><a class="back-link" href="${SITE_BASE}story/">→ فهرست داستان</a><div class="place-hero"><span class="eyebrow">نام و مفهوم</span><h1>${escapeHtml(term.name)}</h1><p>${escapeHtml(term.description)}</p></div>${appearances.length ? `<section class="place-appearances"><h2>در کدام بخش‌ها نامش آمده؟</h2><div class="chapter-list compact">${appearances.map(chapterRow).join("")}</div></section>` : ""}</div>`;
 }
 
 function renderGraph(id) {
@@ -273,7 +304,7 @@ function search(query) {
     ...characters.map(c => ({type: "شخصیت", title: c.name, subtitle: c.group, body: `${c.name} ${c.aliases.join(" ")} ${c.bio}`, href: characterHref(c)})),
     ...places.map(place => ({type: "جا", title: place.name, subtitle: "جای داستان", body: `${place.name} ${place.bio}`, href: placeHref(place)})),
     ...extraGlossary.filter(term => !term.characterId && !term.placeId).map(term => ({type: "نام و مفهوم", title: term.name, subtitle: "واژه‌نامه", body: `${term.name} ${term.description}`, href: termHref(term)})),
-    ...questions.map(q => ({type: "پرسش", title: q.question, subtitle: q.answer, body: `${q.question} ${q.answer}`, href: `#chapter/${q.chapterId}`}))
+    ...questions.map(q => ({type: "پرسش", title: q.question, subtitle: q.answer, body: `${q.question} ${q.answer}`, href: chapterHref(chapterById.get(q.chapterId))}))
   ];
   return items.map(item => {
     const title = normalize(item.title), body = normalize(item.body);
