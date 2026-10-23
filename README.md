@@ -16,6 +16,7 @@ Then open `http://localhost:8000`. The site is dependency-free. For GitHub Pages
 
 - `docs/story.js` contains 24 Iliad books, a three-step bridge, 24 Odyssey books, character profiles, places, and source links.
 - `docs/app.js` derives the reading route, local graph neighborhoods, search results, and progress from that content.
+- Reading guides provide context before difficult openings; inline names open short explanations on hover, keyboard focus, or the adjacent touch button, and link to character or place pages.
 - `docs/styles.css` contains the responsive RTL interface.
 
 The three bridge pages are editorial context, not books of either poem. The *Iliad* ends with Hector's funeral. The *Odyssey* mentions Achilles's funeral (book 24), recounts the wooden horse (book 8), and tells of Agamemnon's murder (including books 1 and 11). Other details come from later or separate Trojan War traditions and are identified on each bridge page. Odyssey books 9–12 are marked as Odysseus's retrospective account so readers can distinguish story chronology from Homer's presentation.
