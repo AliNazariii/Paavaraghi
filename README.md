@@ -1,10 +1,25 @@
 # Homer Path
 
-A Persian, right-to-left, static guide to Homer's *Iliad* and *Odyssey*. Readers can follow all 24 books of each poem, cross the clearly marked narrative bridge between them, explore character connections, and search the curated content without an AI service or account.
+A Persian reading companion for Homer's *Iliad* and *Odyssey*.
+
+The site follows all 24 books of each poem in order. Each book has a short account of what happens, context for where it begins, and links to the people and places mentioned. It is meant to help readers keep their place in the story, whether they are reading the poems or exploring them on their own.
+
+**Read the site:** https://alinazariii.github.io/iliad-odyssey/
+
+## What you can explore
+
+- A book-by-book path through the *Iliad* and the *Odyssey*
+- Brief explanations of names within the reading guides, with links to character and place pages
+- Questions that come up while reading each book
+- A character graph and a separate view of Odysseus's journey in story order
+- Reading progress saved in your browser
+- Introductory guides to the Trojan War and the differences between the two poems
+
+Three context pages connect the end of the *Iliad* to the beginning of the *Odyssey*. They are labelled as background material, not as books written by Homer.
 
 ## Run locally
 
-Build and preview the GitHub Pages output:
+You need Node.js. There are no packages to install.
 
 ```sh
 npm run build
@@ -12,33 +27,21 @@ npm run check
 npm start
 ```
 
-Then open `http://localhost:8000/iliad-odyssey/`. The site is dependency-free. For GitHub Pages, select **Deploy from a branch**, branch `master`, folder `/docs` in repository Pages settings. Run `npm run build` after editing the content or the HTML shell, and commit the generated files in `docs`.
+Open http://localhost:8000/iliad-odyssey/.
 
-## Content structure
+## Project files
 
-- `docs/story.js` contains 24 Iliad books, a three-step bridge, 24 Odyssey books, character profiles, places, and source links.
-- `docs/app.js` derives the reading route, local graph neighborhoods, search results, and progress from that content.
-- Reading guides provide context before difficult openings; inline names link to character or place pages and show short explanations on hover or keyboard focus.
-- `docs/styles.css` contains the responsive RTL interface.
-- `scripts/build-site.mjs` turns the content into standalone HTML pages with readable URLs, page metadata, and `docs/sitemap.xml`.
-- `scripts/site-shell.html` is the shared HTML template, including the Google Search Console verification tag. Keep that tag in place after verification.
+| Path | Purpose |
+| --- | --- |
+| `docs/story.js` | Book guides, characters, places, and source references |
+| `docs/app.js` | Navigation, questions, search, graph, and reading progress |
+| `docs/styles.css` | Site styles |
+| `scripts/site-shell.html` | Shared HTML template |
+| `scripts/build-site.mjs` | Generates the HTML pages and sitemap in `docs/` |
+| `scripts/validate-content.mjs` and `scripts/validate-site.mjs` | Check the content and generated pages |
 
-The three bridge pages are editorial context, not books of either poem. The *Iliad* ends with Hector's funeral. The *Odyssey* mentions Achilles's funeral (book 24), recounts the wooden horse (book 8), and tells of Agamemnon's murder (including books 1 and 11). Other details come from later or separate Trojan War traditions and are identified on each bridge page. Odyssey books 9–12 are marked as Odysseus's retrospective account so readers can distinguish story chronology from Homer's presentation.
+After changing content or the template, run `npm run build` and `npm run check`, then commit the generated files in `docs/` with the source changes. GitHub Pages serves the `docs/` folder from the `master` branch.
 
-## Editorial rules
+## About the text
 
-1. Keep all visitor-facing text in Persian.
-2. Attach every poem chapter to its corresponding book and source link.
-3. Label material from outside the two poems as narrative context.
-4. Add alternate Persian spellings to character aliases for search.
-5. Keep chapter summaries short enough to read independently, and explain why each chapter changes the story.
-
-The Perseus Digital Library links provide a public reference text for each book. The Persian summaries are original guide prose, not a translation of a published Persian edition.
-
-## Verification
-
-Run `npm run check` after building. This validates the content, generated pages, sitemap, and internal links. Browser interaction can be checked with `npm start`.
-
-## Google Search Console
-
-Add the URL-prefix property `https://alinazariii.github.io/iliad-odyssey/`. A custom domain is not required. After GitHub Pages publishes the current `docs` folder, verify ownership using the meta tag already in the shared HTML shell. Submit `https://alinazariii.github.io/iliad-odyssey/sitemap.xml` under Sitemaps, then use URL Inspection on the home page and selected book pages. Verification and sitemap submission require access to the owner's Google account.
+The Persian explanations are original guide prose, not a translation of a published edition. Each poem book links to a reference text in the Perseus Digital Library. Events from other Trojan War traditions are identified as background so they are not mistaken for scenes in the *Iliad* or the *Odyssey*.
