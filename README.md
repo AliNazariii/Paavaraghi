@@ -18,7 +18,7 @@ Then open `http://localhost:8000`. The site is dependency-free. For GitHub Pages
 - `docs/app.js` derives the reading route, local graph neighborhoods, search results, and progress from that content.
 - `docs/styles.css` contains the responsive RTL interface.
 
-The bridge is intentionally separated from the poems. The *Iliad* ends with Hector's funeral; the wooden horse and fall of Troy are not narrated in that poem. Odyssey books 9–12 are marked as Odysseus's retrospective account so readers can distinguish story chronology from Homer's presentation.
+The three bridge pages are editorial context, not books of either poem. The *Iliad* ends with Hector's funeral. The *Odyssey* mentions Achilles's funeral (book 24), recounts the wooden horse (book 8), and tells of Agamemnon's murder (including books 1 and 11). Other details come from later or separate Trojan War traditions and are identified on each bridge page. Odyssey books 9–12 are marked as Odysseus's retrospective account so readers can distinguish story chronology from Homer's presentation.
 
 ## Editorial rules
 

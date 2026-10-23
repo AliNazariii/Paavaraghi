@@ -1,4 +1,4 @@
-import {chapters, characters, places, sourceLink} from "./story.js";
+import {chapters, characters, places, sourceLink} from "./story.js?v=3";
 
 const main = document.querySelector("#main");
 const searchDialog = document.querySelector("#search-dialog");
@@ -19,10 +19,15 @@ try {
 const faNum = n => Number(n).toLocaleString("fa-IR");
 const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"})[char]);
 const normalize = value => String(value).toLowerCase().replace(/[يى]/g, "ی").replace(/ك/g, "ک").replace(/[\u064b-\u065f\u0670]/g, "").replace(/\u200c/g, " ").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
-const chapterLabel = c => c.work === "bridge" ? `بخش پیوند ${faNum(c.number)}` : `سرود ${faNum(c.number)}`;
+const chapterLabel = c => c.work === "bridge" ? `زمینهٔ ${faNum(c.number)}` : `سرود ${faNum(c.number)}`;
 const chapterHref = c => `#chapter/${c.id}`;
 const characterHref = c => `#person/${c.id}`;
 const smallBadge = (text, cls = "") => `<span class="badge ${cls}">${escapeHtml(text)}</span>`;
+const bridgeNotes = {
+  "bridge-01": "مرگ آشیل در ایلیاد روایت نمی‌شود. ادیسه، سرود ۲۴، از خاک‌سپاری او یاد می‌کند؛ چگونگی مرگش را از روایت‌های دیگر می‌شناسیم.",
+  "bridge-02": "اسب چوبی در ادیسه، سرود ۸، در آواز دِمودوکوس آمده است. ایلیاد پیش از سقوط تروا تمام می‌شود؛ شرح پیوستهٔ سقوط شهر در این دو منظومه نیست.",
+  "bridge-03": "قتل آگاممنون در ادیسه، از جمله سرودهای ۱ و ۱۱، بازگو می‌شود. این رویداد در ایلیاد روایت نمی‌شود."
+};
 
 const questions = [
   ["چرا آشیل از جنگ کنار کشید؟", "آگاممنون بریسئیس را از آشیل گرفت؛ این کار برای آشیل بی‌حرمتی به جایگاهش بود.", "iliad-01"],
@@ -86,10 +91,10 @@ function renderHome() {
       </div>
       <div class="hero-art" aria-hidden="true"><div class="art-ring ring-one"></div><div class="art-ring ring-two"></div><div class="art-sun"></div><div class="art-sea"></div><div class="art-ship"><span class="ship-mast"></span><span class="ship-sail"></span><span class="ship-hull"></span></div><span class="art-label top">ΤΡΟΙΑ</span><span class="art-label bottom">ΙΘΑΚΗ</span></div>
     </section>
-    <section class="route-section section-wrap"><div class="section-intro"><span class="eyebrow">راهِ داستان</span><h2>ایلیاد، میان دو داستان، ادیسه</h2><p>سرودهای دو منظومه به‌ترتیب آمده‌اند. رویدادهای بیرون از متن ایلیاد و ادیسه در بخش جداگانه‌ای قرار دارند.</p></div>
+    <section class="route-section section-wrap"><div class="section-intro"><span class="eyebrow">راهِ داستان</span><h2>ایلیاد، میان دو داستان، ادیسه</h2><p>سرودهای دو منظومه به‌ترتیب آمده‌اند. سه بخش زمینه هم میان آن‌هاست؛ کنار هرکدام آمده که چه چیز در متن هومر ذکر شده است.</p></div>
       <div class="route-cards">
         <a class="route-card" href="#chapter/iliad-01"><span class="route-number">۰۱ / خشم</span><span class="route-icon" aria-hidden="true">⚔</span><h3>ایلیاد</h3><p>اختلاف آشیل، نبردهای تروا و دیداری که پس از مرگ هکتور رخ می‌دهد.</p><span class="route-meta">۲۴ سرود <span aria-hidden="true">←</span></span></a>
-        <a class="route-card route-bridge" href="#chapter/bridge-01"><span class="route-number">۰۲ / گذر</span><span class="route-icon" aria-hidden="true">◇</span><h3>میان دو داستان</h3><p>رویدادهای پس از پایان ایلیاد و پیش از آغاز سفر اودیسئوس؛ جدا از متن دو منظومه.</p><span class="route-meta">۳ بخش زمینه <span aria-hidden="true">←</span></span></a>
+        <a class="route-card route-bridge" href="#chapter/bridge-01"><span class="route-number">۰۲ / گذر</span><span class="route-icon" aria-hidden="true">◇</span><h3>میان دو داستان</h3><p>سه توضیح کوتاه دربارهٔ پایان جنگ و بازگشت‌ها؛ با اشاره به جای آن‌ها در ادیسه و روایت‌های دیگر.</p><span class="route-meta">۳ بخش زمینه <span aria-hidden="true">←</span></span></a>
         <a class="route-card" href="#chapter/odyssey-01"><span class="route-number">۰۳ / خانه</span><span class="route-icon" aria-hidden="true">⛵</span><h3>ادیسه</h3><p>خانهٔ در انتظار، سفر پرخطر و بازگشتی که هنوز باید ثابت شود.</p><span class="route-meta">۲۴ سرود <span aria-hidden="true">←</span></span></a>
       </div>
     </section>
@@ -98,12 +103,12 @@ function renderHome() {
       <a href="#graph" class="explore-card"><span class="explore-symbol">⌘</span><h3>پیوندهای شخصیت‌ها</h3><p>شخصیت‌هایی که نامشان در بخش‌های مشترک آمده است.</p><span>دیدن گراف ←</span></a>
       <a href="#voyage" class="explore-card"><span class="explore-symbol">◌</span><h3>ترتیب سفر اودیسئوس</h3><p>ترتیب رخدادهای سفر در کنار ترتیب روایت آن‌ها در ادیسه.</p><span>دیدن مسیر سفر ←</span></a>
     </div></section>
-    <section class="question-section section-wrap"><div><span class="eyebrow">یک سؤال رایج</span><h2>اسب تروا در ایلیاد است؟</h2><p>نه. ایلیاد با خاک‌سپاری هکتور تمام می‌شود. روایت اسب چوبی در بخش میان دو منظومه آمده و جدا از متن ایلیاد مشخص شده است.</p><a class="text-link" href="#chapter/bridge-02">دیدن بخش اسب چوبی ←</a></div><div class="quote-mark" aria-hidden="true">؟</div></section>
+    <section class="question-section section-wrap"><div><span class="eyebrow">یک سؤال رایج</span><h2>اسب تروا در ایلیاد است؟</h2><p>نه. ایلیاد با خاک‌سپاری هکتور تمام می‌شود؛ ادیسه در سرود ۸ از اسب چوبی یاد می‌کند.</p><a class="text-link" href="#chapter/bridge-02">دیدن بخش اسب چوبی ←</a></div><div class="quote-mark" aria-hidden="true">؟</div></section>
   </div>`;
 }
 
 function renderStoryIndex() {
-  return `<div class="page-shell"><div class="page-heading"><span class="eyebrow">مسیر خواندن</span><h1>فهرست سرودها</h1><p>پس از سرودهای ایلیاد، سه بخشِ زمینه و سپس سرودهای ادیسه آمده‌اند. ادیسه برخی رویدادهای گذشته را بعداً به زبان اودیسئوس تعریف می‌کند.</p></div>
+  return `<div class="page-shell"><div class="page-heading"><span class="eyebrow">مسیر خواندن</span><h1>فهرست داستان</h1><p>پس از سرودهای ایلیاد، سه بخشِ زمینه و سپس سرودهای ادیسه آمده‌اند. بخش‌های زمینه سرودهای هومر نیستند؛ جای اشاره‌های ادیسه و روایت‌های دیگر در هر بخش مشخص شده است.</p></div>
     <div class="story-toolbar"><span>${progressText()}</span><a href="#voyage" class="text-link">دیدن ترتیب سفر اودیسئوس ←</a></div>
     ${["iliad", "bridge", "odyssey"].map(work => `<section class="chapter-group" id="${work}"><div class="group-heading"><span class="group-mark ${work}">${work === "iliad" ? "Ⅰ" : work === "bridge" ? "◇" : "Ⅱ"}</span><div><span class="eyebrow">${work === "bridge" ? "مرز روایت‌ها" : "۲۴ سرود"}</span><h2>${WORK_NAMES[work]}</h2></div></div><div class="chapter-list">${chapters.filter(c => c.work === work).map(c => chapterRow(c)).join("")}</div></section>`).join("")}
   </div>`;
@@ -124,11 +129,11 @@ function renderChapter(c) {
     <div class="reader-layout"><aside class="reader-sidebar"><div class="sidebar-label">مسیر خواندن</div>${["iliad", "bridge", "odyssey"].map(work => `<div class="sidebar-group"><h3>${WORK_NAMES[work]}</h3>${chapters.filter(item => item.work === work).map(item => `<a href="${chapterHref(item)}" class="sidebar-item ${item.id === c.id ? "current" : ""}" ${item.id === c.id ? 'aria-current="page"' : ""}><span>${item.work === "bridge" ? "◇" : faNum(item.number)}</span>${escapeHtml(item.title)}${readChapters.has(item.id) ? '<i aria-label="خوانده‌شده">✓</i>' : ""}</a>`).join("")}</div>`).join("")}</aside>
     <article class="reader-article"><div class="chapter-kicker">${smallBadge(WORK_NAMES[c.work], c.work)}<span>${chapterLabel(c)}</span></div><h1>${escapeHtml(c.title)}</h1><p class="chapter-lead">${escapeHtml(c.recap)}</p>
       <div class="insight-box"><span class="insight-icon" aria-hidden="true">✦</span><div><h2>چرا این بخش مهم است؟</h2><p>${escapeHtml(c.why)}</p></div></div>
-      ${c.work === "bridge" ? `<div class="source-note"><strong>مرزِ روایت</strong><p>این بخش برای پیوستگی داستان نوشته شده است. همهٔ رویدادهای آن در متن ایلیاد نیامده‌اند؛ هرجا ادیسه به آن‌ها اشاره می‌کند، در متن راهنما مشخص شده است.</p></div>` : ""}
+      ${c.work === "bridge" ? `<div class="source-note"><strong>این روایت از کجاست؟</strong><p>${escapeHtml(bridgeNotes[c.id])}</p></div>` : ""}
       <section class="reader-section"><h2>چه کسانی در این بخش‌اند؟</h2><div class="people-chips">${c.characters.map(id => {const person = characterById.get(id); return `<a href="${characterHref(person)}" class="person-chip">${escapeHtml(person.name)} <span aria-hidden="true">↖</span></a>`;}).join("")}</div></section>
       <section class="reader-section"><h2>کجا هستیم؟</h2><div class="place-card"><span class="place-pin" aria-hidden="true">⌖</span><div><strong>${escapeHtml(place.name)}</strong><p>${escapeHtml(place.bio)}</p></div></div></section>
       ${relatedQuestions.length ? `<section class="reader-section"><h2>اگر این سؤال را داری…</h2>${relatedQuestions.map(q => `<details class="faq-item"><summary>${escapeHtml(q.question)}</summary><p>${escapeHtml(q.answer)}</p></details>`).join("")}</section>` : `<section class="reader-section"><h2>برای به‌خاطر سپردن</h2><details class="faq-item"><summary>چرا «${escapeHtml(c.title)}» در داستان مهم است؟</summary><p>${escapeHtml(c.why)}</p></details></section>`}
-      <div class="source-line"><span>جایگاه در روایت: ${escapeHtml(c.source.replace(/\d+/g, number => faNum(Number(number))))}</span>${source ? `<a href="${source}" target="_blank" rel="noopener noreferrer">دیدن متن مرجع ↗</a>` : ""}</div>
+      <div class="source-line"><span>جایگاه در روایت: ${escapeHtml(c.source.replace(/\d+/g, number => faNum(Number(number))))}</span>${source ? `<a href="${source}" target="_blank" rel="noopener noreferrer">${c.work === "bridge" ? "دیدن اشاره در ادیسه ↗" : "دیدن متن مرجع ↗"}</a>` : ""}</div>
       <button class="mark-read ${readChapters.has(c.id) ? "is-read" : ""}" data-mark-read="${c.id}" type="button">${readChapters.has(c.id) ? "✓ خوانده شد — برای برداشتن علامت بزن" : "✓ این بخش را خواندم"}</button>
       <nav class="reader-pager" aria-label="بخش‌های مجاور">${prev ? `<a href="${chapterHref(prev)}"><small>بخش قبلی</small><strong>→ ${escapeHtml(prev.title)}</strong></a>` : `<span></span>`}${next ? `<a href="${chapterHref(next)}"><small>بخش بعدی</small><strong>${escapeHtml(next.title)} ←</strong></a>` : `<span></span>`}</nav>
     </article><aside class="context-sidebar"><div class="context-card"><span class="eyebrow">در این نقطه</span><h2>${WORK_NAMES[c.work]}</h2><p>${chapterLabel(c)} · بخش ${faNum(index + 1)} از ${faNum(chapters.length)}</p><div class="context-progress"><span style="height:${Math.max(4, (index + 1) / chapters.length * 100)}%"></span></div></div><div class="context-card muted"><h2>بعد چه می‌شود؟</h2><p>${next ? escapeHtml(next.title) : "به پایان مسیر رسیده‌ای."}</p>${next ? `<a class="text-link" href="${chapterHref(next)}">ادامه بده ←</a>` : `<a class="text-link" href="#home">بازگشت به آغاز ←</a>`}</div></aside></div></div>`;

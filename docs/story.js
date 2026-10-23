@@ -112,7 +112,7 @@ function makeChapters(rows, work, prefix) {
     id: `${prefix}-${String(index + 1).padStart(2, "0")}`,
     work, number: index + 1, title, recap, why,
     characters: people.split(" "), place,
-    source: work === "bridge" ? "زمینهٔ روایی" : `${work === "iliad" ? "ایلیاد" : "ادیسه"}، سرود ${index + 1}`
+    source: work === "bridge" ? "توضیح راهنما؛ نه سرودی از دو منظومه" : `${work === "iliad" ? "ایلیاد" : "ادیسه"}، سرود ${index + 1}`
   }));
 }
 
@@ -123,7 +123,10 @@ export const chapters = [
 ];
 
 export const sourceLink = chapter => {
-  if (chapter.work === "bridge") return null;
+  if (chapter.work === "bridge") {
+    const odysseyBook = {1: 24, 2: 8, 3: 11}[chapter.number];
+    return `https://www.perseus.tufts.edu/hopper/text?doc=Perseus%3Atext%3A1999.01.0136%3Abook%3D${odysseyBook}`;
+  }
   const textId = chapter.work === "iliad" ? "1999.01.0134" : "1999.01.0136";
   return `https://www.perseus.tufts.edu/hopper/text?doc=Perseus%3Atext%3A${textId}%3Abook%3D${chapter.number}`;
 };
