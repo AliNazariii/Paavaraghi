@@ -44,7 +44,7 @@ function renderAnnotated(value) {
     const entry = glossaryByName.get(match[1]);
     html += escapeHtml(content.slice(lastIndex, match.index));
     const id = `term-tip-${++tooltipSerial}`;
-    html += `<span class="inline-term">${entry.href ? `<a href="${entry.href}" aria-describedby="${id}">${escapeHtml(match[0])}</a>` : `<span class="inline-term-label">${escapeHtml(match[0])}</span>`}<button class="term-info" type="button" aria-label="توضیح ${escapeHtml(match[0])}" aria-controls="${id}" aria-expanded="false">؟</button><span class="term-tip" id="${id}" role="tooltip">${escapeHtml(entry.description)}</span></span>`;
+    html += `<span class="inline-term">${entry.href ? `<a href="${entry.href}" aria-describedby="${id}">${escapeHtml(match[0])}</a>` : `<span class="inline-term-label">${escapeHtml(match[0])}</span>`}<span class="term-tip" id="${id}" role="tooltip">${escapeHtml(entry.description)}</span></span>`;
     lastIndex = match.index + match[0].length;
   }
   return html + escapeHtml(content.slice(lastIndex));
@@ -241,7 +241,7 @@ function renderChapter(c) {
   return `<div class="reader-shell"><div class="reader-top"><a class="back-link" href="${SITE_BASE}story/">→ فهرست داستان</a><div class="reader-count">بخش ${faNum(index + 1)} از ${faNum(chapters.length)}</div></div>
     <div class="reader-layout"><aside class="reader-sidebar"><div class="sidebar-label">مسیر خواندن</div>${["iliad", "bridge", "odyssey"].map(work => `<div class="sidebar-group"><h3>${WORK_NAMES[work]}</h3>${chapters.filter(item => item.work === work).map(item => `<a href="${chapterHref(item)}" class="sidebar-item ${item.id === c.id ? "current" : ""}" ${item.id === c.id ? 'aria-current="page"' : ""}><span>${item.work === "bridge" ? "◇" : faNum(item.number)}</span>${escapeHtml(item.title)}${readChapters.has(item.id) ? '<i aria-label="خوانده‌شده">✓</i>' : ""}</a>`).join("")}</div>`).join("")}</aside>
     <article class="reader-article"><div class="chapter-kicker">${smallBadge(WORK_NAMES[c.work], c.work)}<span>${chapterLabel(c)}</span></div><h1>${escapeHtml(c.title)}</h1>
-      ${guide ? `<section class="reading-guide" aria-label="راهنمای شروع این سرود"><h2>قبل از خواندن این سرود</h2><p class="guide-hint">روی اسم‌های نقطه‌چین مکث کن یا علامت «؟» را بزن؛ خودِ اسم به صفحهٔ کاملش می‌رود.</p><div class="guide-step"><strong>پیش از این چه شده؟</strong><p>${renderAnnotated(guide.before)}</p></div><div class="guide-step"><strong>حالا کجای داستانیم؟</strong><p>${renderAnnotated(guide.scene)}</p></div><div class="guide-step"><strong>فعلاً چه چیزی را دنبال کنم؟</strong><p>${renderAnnotated(guide.focus)}</p></div></section>` : ""}
+      ${guide ? `<section class="reading-guide" aria-label="راهنمای شروع این سرود"><h2>قبل از خواندن این سرود</h2><div class="guide-step"><strong>پیش از این چه شده؟</strong><p>${renderAnnotated(guide.before)}</p></div><div class="guide-step"><strong>حالا کجای داستانیم؟</strong><p>${renderAnnotated(guide.scene)}</p></div><div class="guide-step"><strong>فعلاً چه چیزی را دنبال کنم؟</strong><p>${renderAnnotated(guide.focus)}</p></div></section>` : ""}
       <p class="chapter-lead">${renderAnnotated(c.recap)}</p>
       <div class="insight-box"><span class="insight-icon" aria-hidden="true">✦</span><div><h2>چرا این بخش مهم است؟</h2><p>${renderAnnotated(c.why)}</p></div></div>
       ${c.work === "bridge" ? `<div class="source-note"><strong>این روایت از کجاست؟</strong><p>${renderAnnotated(bridgeNotes[c.id])}</p></div>` : ""}
@@ -322,15 +322,6 @@ function renderSearch() {
 }
 
 document.addEventListener("click", event => {
-  const info = event.target.closest(".term-info");
-  document.querySelectorAll(".term-info[aria-expanded='true']").forEach(button => {
-    if (button !== info) { button.setAttribute("aria-expanded", "false"); button.closest(".inline-term").classList.remove("is-open"); }
-  });
-  if (info) {
-    const open = info.getAttribute("aria-expanded") !== "true";
-    info.setAttribute("aria-expanded", String(open));
-    info.closest(".inline-term").classList.toggle("is-open", open);
-  }
   const trigger = event.target.closest("#search-open");
   if (trigger) { searchDialog.showModal(); searchInput.focus(); renderSearch(); }
   const mark = event.target.closest("[data-mark-read]");
@@ -346,7 +337,6 @@ document.addEventListener("change", event => {
 });
 
 document.addEventListener("keydown", event => {
-  if (event.key === "Escape") document.querySelectorAll(".term-info[aria-expanded='true']").forEach(button => { button.setAttribute("aria-expanded", "false"); button.closest(".inline-term").classList.remove("is-open"); });
   if (event.key === "/" && !searchDialog.open && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) {
     event.preventDefault(); searchDialog.showModal(); searchInput.focus(); renderSearch();
   }

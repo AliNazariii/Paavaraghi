@@ -18,7 +18,7 @@ Then open `http://localhost:8000/iliad-odyssey/`. The site is dependency-free. F
 
 - `docs/story.js` contains 24 Iliad books, a three-step bridge, 24 Odyssey books, character profiles, places, and source links.
 - `docs/app.js` derives the reading route, local graph neighborhoods, search results, and progress from that content.
-- Reading guides provide context before difficult openings; inline names open short explanations on hover, keyboard focus, or the adjacent touch button, and link to character or place pages.
+- Reading guides provide context before difficult openings; inline names link to character or place pages and show short explanations on hover or keyboard focus.
 - `docs/styles.css` contains the responsive RTL interface.
 - `scripts/build-site.mjs` turns the content into standalone HTML pages with readable URLs, page metadata, and `docs/sitemap.xml`.
 - `scripts/site-shell.html` is the shared HTML template, including the Google Search Console verification tag. Keep that tag in place after verification.
