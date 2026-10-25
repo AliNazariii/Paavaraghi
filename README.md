@@ -1,62 +1,65 @@
 # Paavarghi
 
-Persian reading companions for good books. The home page is a shelf of book cards; each book has its own guide with a design that fits it.
+Paavarghi (Persian for "footnote") is a collection of Persian reading guides for great books. Each guide sits beside the book you are reading: before every chapter it tells you where you are in the story, who is on stage, and what to watch for.
 
-**Read the site:** https://alinazariii.github.io/Paavarghi/
+**Visit the site:** https://alinazariii.github.io/Paavarghi/
 
-## Books
+The home page is a shelf of book cards. Pick a book to open its guide. Every guide has its own design, chosen to fit the book.
 
-- **Homer: *Iliad* and *Odyssey*** at `/homer/`
+## On the shelf
 
-## Homer guide
+| Book | Guide |
+| --- | --- |
+| Homer, *Iliad* and *Odyssey* | [/homer/](https://alinazariii.github.io/Paavarghi/homer/) |
 
-The Homer guide follows all 24 books of each poem in order. Each book has a short account of what happens, context for where it begins, and links to the people and places mentioned. It is meant to help readers keep their place in the story, whether they are reading the poems or exploring them on their own.
+More books will be added over time.
 
-### What you can explore
+### Homer: *Iliad* and *Odyssey*
 
-- A book-by-book path through the *Iliad* and the *Odyssey*
-- Brief explanations of names within the reading guides, with links to character and place pages
-- Questions that come up while reading each book
-- A character graph and a separate view of Odysseus's journey in story order
-- Reading progress saved in your browser
-- Introductory guides to the Trojan War and the differences between the two poems
+The guide covers all 24 books of each poem, in order. For each book you get:
 
-Three context pages connect the end of the *Iliad* to the beginning of the *Odyssey*. They are labelled as background material, not as books written by Homer.
+- what has happened so far, where the scene is set, and what to follow
+- a short account of the book and why it matters
+- links to the people and places involved
+- a link to the reference text in the Perseus Digital Library
+
+It also has character and place pages, a character graph, Odysseus's voyage in the order the events happen, short introductions to the Trojan War and to how the two poems differ, search, and reading progress saved in your browser.
+
+Three context pages bridge the end of the *Iliad* and the start of the *Odyssey*. They are marked as background, not as part of Homer's text. Material from other Trojan War traditions is labelled the same way.
 
 ## Run locally
 
-You need Node.js. There are no packages to install.
+You need Node.js. There is nothing to install.
 
 ```sh
-npm run build
-npm run check
-npm start
+npm run build   # generate pages into docs/
+npm run check   # validate content, pages and internal links
+npm start       # serve at http://localhost:8000/Paavarghi/
 ```
 
-Open http://localhost:8000/Paavarghi/.
+GitHub Pages serves the `docs/` folder from `master`. After you edit content or templates, build and check, then commit the generated files together with the source changes.
 
-## Project files
+## How it is organised
 
-| Path | Purpose |
-| --- | --- |
-| `scripts/site-config.mjs` | Site URL and base path (override with `SITE_URL`) |
-| `scripts/build-site.mjs` | Builds the library page, every book, and `docs/sitemap.xml` |
-| `scripts/library/books.mjs` | Book list and card colours for the home page |
-| `scripts/library/build.mjs` and `docs/library.css` | Library home page |
-| `docs/homer/story.js` | Homer book guides, characters, places, and source references |
-| `docs/homer/app.js` | Homer navigation, questions, search, graph, and reading progress |
-| `docs/homer/styles.css` | Homer guide styles |
-| `scripts/homer/shell.html` and `scripts/homer/build.mjs` | Homer HTML template and page generator |
-| `scripts/validate-content.mjs` and `scripts/validate-site.mjs` | Check the content and generated pages |
+```
+docs/
+  index.html, library.css     library home page (generated / hand-written)
+  homer/                      Homer guide: story.js, app.js, styles.css, generated pages
+scripts/
+  site-config.mjs             site URL and base path (override with SITE_URL)
+  build-site.mjs              builds the library, every book, and sitemap.xml
+  library/                    book list (books.mjs) and home page generator
+  homer/                      Homer page template and generator
+  validate-*.mjs              content and site checks
+```
 
-## Add a book
+## Adding a book
 
-1. Put the book's assets in `docs/<book>/` with its own styles, and a generator in `scripts/<book>/build.mjs` that returns its sitemap URLs.
-2. Call it from `scripts/build-site.mjs`.
-3. Add an entry to `scripts/library/books.mjs` with the path, description and theme colours for its card.
+1. Put the guide in `docs/<book>/` with its own styles and scripts.
+2. Write `scripts/<book>/build.mjs` that generates its pages and returns their sitemap URLs.
+3. Call that build from `scripts/build-site.mjs`.
+4. Add the book to `scripts/library/books.mjs`, with its path, description, and the theme colours for its card.
 
-After changing content or the template, run `npm run build` and `npm run check`, then commit the generated files in `docs/` with the source changes. GitHub Pages serves the `docs/` folder from the `master` branch.
+## About the writing
 
-## About the text
-
-The Persian explanations are original guide prose, not a translation of a published edition. Each poem book links to a reference text in the Perseus Digital Library. Events from other Trojan War traditions are identified as background so they are not mistaken for scenes in the *Iliad* or the *Odyssey*.
+The Persian text is original guide prose. It is not a translation of any published edition.
