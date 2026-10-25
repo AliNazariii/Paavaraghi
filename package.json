@@ -1,11 +1,11 @@
 {
-  "name": "homer-path",
+  "name": "paavarghi",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "node scripts/build-site.mjs",
-    "check": "node --check docs/app.js && node --check docs/story.js && node scripts/validate-content.mjs && node scripts/validate-site.mjs",
+    "check": "node --check docs/homer/app.js && node --check docs/homer/story.js && node scripts/validate-content.mjs && node scripts/validate-site.mjs",
     "start": "node scripts/dev-server.mjs"
   }
 }

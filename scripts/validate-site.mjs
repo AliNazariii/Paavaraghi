@@ -1,9 +1,10 @@
 import {readFile, readdir, stat} from "node:fs/promises";
 import {join, resolve, sep} from "node:path";
-import {chapters, characters, places} from "../docs/story.js";
+import {chapters, characters, places} from "../docs/homer/story.js";
+import {SITE_URL, BASE_PATH} from "./site-config.mjs";
 
 const root = resolve(new URL("../docs/", import.meta.url).pathname);
-const base = "https://alinazariii.github.io/iliad-odyssey/";
+const base = SITE_URL;
 const pages = [];
 async function walk(directory) {
   for (const entry of await readdir(directory, {withFileTypes: true})) {
@@ -13,7 +14,7 @@ async function walk(directory) {
   }
 }
 await walk(root);
-if (pages.length < 1 + chapters.length + characters.length + places.length + 5) throw new Error(`Too few generated pages: ${pages.length}`);
+if (pages.length < 2 + chapters.length + characters.length + places.length + 5) throw new Error(`Too few generated pages: ${pages.length}`);
 const sitemap = await readFile(join(root, "sitemap.xml"), "utf8");
 const sitemapUrls = new Set([...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(match => match[1]));
 if (sitemapUrls.size < 90) throw new Error(`Too few sitemap URLs: ${sitemapUrls.size}`);
@@ -30,12 +31,12 @@ for (const file of pages) {
   const noindex = html.includes('name="robots" content="noindex, follow"');
   if (noindex === sitemapUrls.has(url)) throw new Error(`Sitemap and indexability disagree: ${relative}`);
   for (const [, href] of html.matchAll(/href="([^"]+)"/g)) {
-    if (!href.startsWith("/iliad-odyssey/")) continue;
-    const path = new URL(href, base).pathname.slice("/iliad-odyssey/".length);
+    if (!href.startsWith(BASE_PATH)) continue;
+    const path = new URL(href, base).pathname.slice(BASE_PATH.length);
     const target = resolve(root, path, path.endsWith("/") ? "index.html" : "");
     if (target !== root && !target.startsWith(root + sep)) throw new Error(`Unsafe link: ${href}`);
     try { await stat(target); } catch { throw new Error(`Broken internal link in ${relative}: ${href}`); }
   }
 }
-await stat(join(root, "share-cover.png"));
+await stat(join(root, "homer", "share-cover.png"));
 console.log(`Validated ${pages.length} HTML pages, ${sitemapUrls.size} sitemap URLs and internal links.`);

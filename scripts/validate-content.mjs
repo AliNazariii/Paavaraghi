@@ -1,4 +1,4 @@
-import {chapters, characters, places, readingGuides, extraGlossary, sourceLink} from "../docs/story.js";
+import {chapters, characters, places, readingGuides, extraGlossary, sourceLink} from "../docs/homer/story.js";
 
 const ids = new Set();
 const characterIds = new Set(characters.map(item => item.id));
