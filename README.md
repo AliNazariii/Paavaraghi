@@ -1,8 +1,8 @@
-# Paavarghi
+# Paavaraghi
 
-Paavarghi (Persian for "footnote") is a collection of Persian reading guides for great books. Each guide sits beside the book you are reading: before every chapter it tells you where you are in the story, who is on stage, and what to watch for.
+Paavaraghi (Persian for "footnote") is a collection of Persian reading guides for great books. Each guide sits beside the book you are reading: before every chapter it tells you where you are in the story, who is on stage, and what to watch for.
 
-**Visit the site:** https://alinazariii.github.io/Paavarghi/
+**Visit the site:** https://alinazariii.github.io/paavaraghi/
 
 The home page is a shelf of book cards. Pick a book to open its guide. Every guide has its own design, chosen to fit the book.
 
@@ -10,7 +10,7 @@ The home page is a shelf of book cards. Pick a book to open its guide. Every gui
 
 | Book | Guide |
 | --- | --- |
-| Homer, *Iliad* and *Odyssey* | [/homer/](https://alinazariii.github.io/Paavarghi/homer/) |
+| Homer, *Iliad* and *Odyssey* | [/homer/](https://alinazariii.github.io/paavaraghi/homer/) |
 
 More books will be added over time.
 
@@ -34,7 +34,7 @@ You need Node.js. There is nothing to install.
 ```sh
 npm run build   # generate pages into docs/
 npm run check   # validate content, pages and internal links
-npm start       # serve at http://localhost:8000/Paavarghi/
+npm start       # serve at http://localhost:8000/paavaraghi/
 ```
 
 GitHub Pages serves the `docs/` folder from `master`. After you edit content or templates, build and check, then commit the generated files together with the source changes.
