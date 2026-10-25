@@ -27,7 +27,7 @@ export async function buildLibrary(siteUrl, outDir) {
   <meta name="google-site-verification" content="q3r2SLr-4UNs_6PULPqjv8PYGrFdWRCT8ec3pYtZzxQ">
   <meta name="description" content="${escape(description)}">
   <title>${title} | ${tagline}</title>
-  <link rel="stylesheet" href="${basePath}library.css?v=1">
+  <link rel="stylesheet" href="${basePath}library.css?v=2">
   <link rel="canonical" href="${escape(siteUrl)}">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="fa_IR">
