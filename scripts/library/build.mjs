@@ -24,7 +24,6 @@ export async function buildLibrary(siteUrl, outDir) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f6f1e7">
-  <meta name="google-site-verification" content="q3r2SLr-4UNs_6PULPqjv8PYGrFdWRCT8ec3pYtZzxQ">
   <meta name="description" content="${escape(description)}">
   <title>${title} | ${tagline}</title>
   <link rel="stylesheet" href="${basePath}library.css?v=2">
