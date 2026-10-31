@@ -11,6 +11,7 @@ The home page is a shelf of book cards. Pick a book to open its guide. Every gui
 | Book | Guide |
 | --- | --- |
 | Homer, *Iliad* and *Odyssey* | [/homer/](https://paavaraghi.ir/homer/) |
+| J. D. Salinger, *Franny and Zooey* | [/franny-and-zooey/](https://paavaraghi.ir/franny-and-zooey/) |
 
 More books will be added over time.
 
@@ -26,6 +27,12 @@ The guide covers all 24 books of each poem, in order. For each book you get:
 It also has character and place pages, a character graph, Odysseus's voyage in the order the events happen, short introductions to the Trojan War and to how the two poems differ, search, and reading progress saved in your browser.
 
 Three context pages bridge the end of the *Iliad* and the start of the *Odyssey*. They are marked as background, not as part of Homer's text. Material from other Trojan War traditions is labelled the same way.
+
+### Salinger: *Franny and Zooey*
+
+The guide follows the book's two original stories, *Franny* and *Zooey*. Each has a before-reading introduction, prompts to follow while reading, and a closed disclosure with a brief recap and discussion of the ending. There are also family and character notes, reading themes, and a source bibliography. The notes are independent of page numbers and translations; they do not invent chapter divisions.
+
+This guide has its own paper-and-burgundy design. The pages and spoiler disclosures work without JavaScript. With JavaScript, readers can mark either story as read; progress is stored only in their browser, separately from the Homer guide.
 
 ## Run locally
 
@@ -45,11 +52,13 @@ GitHub Pages serves the `docs/` folder from `master`. After you edit content or 
 docs/
   index.html, library.css     library home page (generated / hand-written)
   homer/                      Homer guide: story.js, app.js, styles.css, generated pages
+  franny-and-zooey/            Salinger guide: styles, progress script, share cover, generated pages
 scripts/
   site-config.mjs             site URL and base path (override with SITE_URL)
   build-site.mjs              builds the library, every book, and sitemap.xml
   library/                    book list (books.mjs) and home page generator
   homer/                      Homer page template and generator
+  franny-and-zooey/            Salinger content and page generator
   validate-*.mjs              content and site checks
 ```
 

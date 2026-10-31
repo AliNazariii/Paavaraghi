@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f5f0e7"/>
+  <rect x="36" y="36" width="1128" height="558" fill="none" stroke="#cfc3b2"/>
+  <rect x="70" y="70" width="355" height="490" fill="#842e3d"/>
+  <rect x="85" y="85" width="325" height="460" fill="none" stroke="#c99388"/>
+  <text x="247" y="340" fill="#f5e9d7" font-family="Georgia,serif" font-size="155" font-style="italic" text-anchor="middle">f&amp;z</text>
+  <path d="M197 395h100" stroke="#dfb8a2"/>
+  <text x="247" y="450" fill="#edd0c0" font-family="Georgia,serif" font-size="15" text-anchor="middle" letter-spacing="2">J. D. SALINGER</text>
+  <text x="790" y="255" fill="#842e3d" font-family="Tahoma,sans-serif" font-size="76" font-weight="bold" text-anchor="middle" direction="rtl">فرنی و زویی</text>
+  <text x="790" y="340" fill="#696258" font-family="Tahoma,sans-serif" font-size="29" text-anchor="middle" direction="rtl">راهنمای خواندن در پاورقی</text>
+  <path d="M690 395h200" stroke="#cfc3b2"/>
+  <text x="790" y="449" fill="#394c42" font-family="Georgia,serif" font-size="22" text-anchor="middle" letter-spacing="1">FRANNY AND ZOOEY</text>
+</svg>
