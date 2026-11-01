@@ -1,5 +1,6 @@
 import {chapters} from "../../docs/homer/story.js";
 import {stories} from "../franny-and-zooey/content.mjs";
+import {chapters as drownedChapters} from "../ahl-e-gharq/chapters.mjs";
 
 const faNum = value => String(value).replace(/\d/g, digit => "۰۱۲۳۴۵۶۷۸۹"[digit]);
 const count = work => chapters.filter(chapter => chapter.work === work).length;
@@ -28,5 +29,16 @@ export const books = [
     mark: "❧",
     theme: {bg: "#842e3d", panel: "#943e4d", ink: "#f6ebdb", soft: "#edd0c0", accent: "#dfb8a2"},
     parts: stories.map(story => ({label: story.title, path: `${story.id}/`}))
+  },
+  {
+    id: "ahl-e-gharq",
+    path: "ahl-e-gharq/",
+    title: "اهل غرق",
+    author: "منیرو روانی‌پور",
+    description: "در جفره، میان دریا و خشکی، قصه و تاریخ؛ همراه فصل‌های رمان، آدم‌های آبادی و نقدی برای پس از خواندن.",
+    meta: `${faNum(drownedChapters.length)} فصل · نقد و گفت‌وگو`,
+    mark: "≈",
+    theme: {bg: "#173f45", panel: "#286570", ink: "#f5f0e5", soft: "#cedddb", accent: "#edc18a"},
+    parts: [{label: "همراه فصل‌ها", path: "chapters/"}, {label: "نقد و گفت‌وگو", path: "analysis/"}]
   }
 ];

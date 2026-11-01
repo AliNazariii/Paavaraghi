@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="580" viewBox="0 0 480 580">
+  <defs>
+    <linearGradient id="depth" x2="0" y2="1"><stop stop-color="#286570"/><stop offset="1" stop-color="#102e3a"/></linearGradient>
+    <pattern id="grain" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="1" cy="3" r=".45" fill="#d5e2d4" opacity=".22"/></pattern>
+    <clipPath id="frame"><path d="M0 240a240 240 0 0 1 480 0v340H0z"/></clipPath>
+    <path id="wave" d="M-50 0Q-10-17 30 0T110 0T190 0T270 0T350 0T430 0T510 0" fill="none"/>
+  </defs>
+  <g clip-path="url(#frame)">
+    <path fill="#e7dcc3" d="M0 0h480v580H0z"/>
+    <circle cx="300" cy="152" r="61" fill="#c97f4d"/>
+    <path d="M300 75v-9m-76 86h-9m76 77v9m76-86h9m-24-55 6-6m-116 0 6 6m-6 110 6-6m110 0 6 6" stroke="#ac6845" stroke-width="1.2"/>
+    <path d="M0 286Q100 259 210 290T480 278v302H0z" fill="url(#depth)"/>
+    <path d="M0 278Q100 252 210 283T480 270" fill="none" stroke="#1b4b53" stroke-width="3"/>
+    <g fill="none" stroke="#183f46" stroke-width="1.2" opacity=".8"><path d="M83 184q13-12 26 0 13-12 26 0M143 137q9-8 18 0 9-8 18 0M57 220q8-7 16 0 8-7 16 0"/></g>
+    <g stroke="#b6d2c4" stroke-width=".8" opacity=".6">
+      <use href="#wave" y="313"/><use href="#wave" y="329" x="28"/><use href="#wave" y="345"/><use href="#wave" y="361" x="28"/>
+      <use href="#wave" y="377"/><use href="#wave" y="393" x="28"/><use href="#wave" y="409"/><use href="#wave" y="425" x="28"/>
+      <use href="#wave" y="441"/><use href="#wave" y="457" x="28"/><use href="#wave" y="473"/><use href="#wave" y="489" x="28"/>
+      <use href="#wave" y="505"/><use href="#wave" y="521" x="28"/><use href="#wave" y="537"/><use href="#wave" y="553" x="28"/>
+    </g>
+    <g transform="translate(198 414) rotate(-12)" fill="#173d47" stroke="#edc18a" stroke-width="1.6">
+      <path d="M-67 0Q-5-53 68 0-5 53-67 0L-96-26v52z"/><path d="M32-19q-13 19 0 38M-25-23l10-17 23 12M-25 23l10 17 23-12" fill="none"/><circle cx="43" cy="-3" r="3" fill="#edc18a" stroke="none"/><path d="M-43 0H17M-35-9h42M-35 18H2" fill="none" opacity=".6"/>
+    </g>
+    <g fill="none" stroke="#edc18a" stroke-width="1" opacity=".7"><circle cx="350" cy="370" r="4"/><circle cx="363" cy="347" r="2"/><circle cx="355" cy="320" r="1.5"/><path d="M74 570q12-36 0-67m0 41q-16-7-19-25m20 40q21-8 24-25M407 580q-11-24 0-53m-3 30q-17-9-16-22m18 14q16-7 17-22"/></g>
+    <path fill="url(#grain)" d="M0 0h480v580H0z"/>
+  </g>
+  <path d="M12 240a228 228 0 0 1 456 0v328H12z" fill="none" stroke="#f0e3c9" opacity=".55"/>
+</svg>

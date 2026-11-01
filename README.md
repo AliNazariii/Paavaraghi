@@ -12,6 +12,7 @@ The home page is a shelf of book cards. Pick a book to open its guide. Every gui
 | --- | --- |
 | Homer, *Iliad* and *Odyssey* | [/homer/](https://paavaraghi.ir/homer/) |
 | J. D. Salinger, *Franny and Zooey* | [/franny-and-zooey/](https://paavaraghi.ir/franny-and-zooey/) |
+| Moniru Ravanipour, *Ahl-e Gharq (The Drowned)* | [/ahl-e-gharq/](https://paavaraghi.ir/ahl-e-gharq/) |
 
 More books will be added over time.
 
@@ -34,6 +35,12 @@ The guide follows the book's two original stories, *Franny* and *Zooey*. Each ha
 
 This guide has its own paper-and-burgundy design. The pages and spoiler disclosures work without JavaScript. With JavaScript, readers can mark either story as read; progress is stored only in their browser, separately from the Homer guide.
 
+### Ravanipour: *Ahl-e Gharq (The Drowned)*
+
+The guide follows all 34 numbered chapters of the Khaneh Aftab second printing (winter 1369), with original chapter labels and four editorial reading paths. Each chapter has a before-reading note, a question, and a closed disclosure containing its recap and interpretation. The forty pages also include 18 character profiles, 16 local words and motifs, seven critical discussions, and an annotated bibliography that distinguishes the reference scan from later editions.
+
+The sea-and-paper design includes original artwork and locally served Vazirmatn fonts (SIL Open Font License, included with the font files). Content and disclosures work without JavaScript. Optional chapter search accepts Persian and Arabic digits and letter variants; reading progress stays in the browser under its own book-specific key. The novel and research scan are not redistributed.
+
 ## Run locally
 
 You need Node.js. There is nothing to install.
@@ -53,12 +60,14 @@ docs/
   index.html, library.css     library home page (generated / hand-written)
   homer/                      Homer guide: story.js, app.js, styles.css, generated pages
   franny-and-zooey/            Salinger guide: styles, progress script, share cover, generated pages
+  ahl-e-gharq/                 Ravanipour guide: styles, local fonts, artwork, progress script, generated pages
 scripts/
   site-config.mjs             site URL and base path (override with SITE_URL)
   build-site.mjs              builds the library, every book, and sitemap.xml
   library/                    book list (books.mjs) and home page generator
   homer/                      Homer page template and generator
   franny-and-zooey/            Salinger content and page generator
+  ahl-e-gharq/                 Ravanipour chapter notes, research references, and page generator
   validate-*.mjs              content and site checks
 ```
 

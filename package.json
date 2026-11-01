@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build-site.mjs",
-    "check": "node --check docs/homer/app.js && node --check docs/homer/story.js && node --check docs/franny-and-zooey/app.js && node scripts/validate-content.mjs && node scripts/validate-site.mjs",
+    "check": "node --check docs/homer/app.js && node --check docs/homer/story.js && node --check docs/franny-and-zooey/app.js && node --check docs/ahl-e-gharq/app.js && node scripts/validate-content.mjs && node scripts/validate-ahl-e-gharq.mjs && node scripts/validate-site.mjs",
     "start": "node scripts/dev-server.mjs"
   }
 }
