@@ -1,9 +1,9 @@
 import {readFile, readdir, stat} from "node:fs/promises";
 import {join, resolve, sep} from "node:path";
 import {chapters, characters, places} from "../docs/homer/story.js";
-import {SITE_URL, BASE_PATH} from "./site-config.mjs";
+import {SITE_URL, BASE_PATH, docsRoot} from "./site-config.mjs";
 
-const root = resolve(new URL("../docs/", import.meta.url).pathname);
+const root = resolve(docsRoot);
 const base = SITE_URL;
 const pages = [];
 async function walk(directory) {

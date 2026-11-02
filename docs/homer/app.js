@@ -1,4 +1,4 @@
-import {chapters, characters, characterDetails, places, readingGuides, extraGlossary, sourceLink} from "./story.js?v=6";
+import {chapters, characters, characterDetails, places, readingGuides, extraGlossary, sourceLink} from "./story.js?v=7";
 
 const main = document.querySelector("#main");
 const searchDialog = document.querySelector("#search-dialog");
@@ -256,7 +256,7 @@ function renderChapter(c) {
 
 function renderPeople() {
   const groups = [...new Set(characters.map(c => c.group))];
-  return `<div class="page-shell"><div class="page-heading"><span class="eyebrow">آدم‌ها و خدایان</span><h1>شخصیت‌ها</h1><p>نام‌های دیگر، معرفی کوتاه و بخش‌های مرتبط با هر شخصیت.</p></div><div class="people-directory">${groups.map(group => `<section><h2>${escapeHtml(group)}</h2><div class="people-grid">${characters.filter(c => c.group === group).map(c => `<a class="person-card" href="${characterHref(c)}"><span class="person-monogram" aria-hidden="true">${escapeHtml(c.name[0])}</span><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.bio)}</p><span class="person-card-link">شناختن ${escapeHtml(c.name)} ←</span></a>`).join("")}</div></section>`).join("")}</div></div>`;
+  return `<div class="page-shell"><div class="page-heading"><span class="eyebrow">آدم‌ها و خدایان</span><h1>شخصیت‌ها</h1><p>نام‌های دیگر، معرفی کوتاه و بخش‌های مرتبط با هر شخصیت.</p></div><div class="people-directory">${groups.map(group => `<section><h2>${escapeHtml(group)}</h2><div class="people-grid">${characters.filter(c => c.group === group).map(c => `<a class="person-card" href="${characterHref(c)}"><span class="person-monogram" aria-hidden="true">${escapeHtml(c.name[0])}</span><h3>${escapeHtml(c.name)} <bdi class="person-english" lang="en">(${escapeHtml(c.englishName)})</bdi></h3><p>${escapeHtml(c.bio)}</p><span class="person-card-link">شناختن ${escapeHtml(c.name)} ←</span></a>`).join("")}</div></section>`).join("")}</div></div>`;
 }
 
 function renderPerson(person) {

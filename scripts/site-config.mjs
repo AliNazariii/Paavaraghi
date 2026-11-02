@@ -1,4 +1,6 @@
+import {fileURLToPath} from "node:url";
+
 // The only place the site address lives. Override with SITE_URL when it moves.
 export const SITE_URL = (process.env.SITE_URL || "https://paavaraghi.ir/").replace(/\/?$/, "/");
 export const BASE_PATH = new URL(SITE_URL).pathname;
-export const docsRoot = new URL("../docs/", import.meta.url).pathname;
+export const docsRoot = fileURLToPath(new URL("../docs/", import.meta.url));
