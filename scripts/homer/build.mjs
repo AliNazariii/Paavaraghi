@@ -2,6 +2,8 @@ import {readFile, mkdir, writeFile} from "node:fs/promises";
 import {join} from "node:path";
 import {chapters, characters, characterDetails, places, readingGuides, extraGlossary, sourceLink} from "../../docs/homer/story.js";
 
+import {graphModes, renderAllGraph} from "../../docs/homer/graph.js";
+
 const shell = await readFile(new URL("./shell.html", import.meta.url), "utf8");
 let root, siteUrl, basePath, libraryPath, sitemap;
 const escape = value => String(value).replace(/[&<>"']/g, character => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"})[character]);
@@ -17,8 +19,8 @@ function page(title, description, path, content, indexable = true, image = "shar
   let html = shell
     .replace(/<title>[^<]*<\/title>/, `<title>${escape(title)} | راهِ هومر</title>`)
     .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${escape(description.slice(0, 220))}">`)
-    .replace(/(<link rel="stylesheet" href=")[^"]+/, `$1${basePath}styles.css?v=8`)
-    .replace(/(<script type="module" src=")[^"]+/, `$1${basePath}app.js?v=9`)
+    .replace(/(<link rel="stylesheet" href=")[^"]+/, `$1${basePath}styles.css?v=9`)
+    .replace(/(<script type="module" src=")[^"]+/, `$1${basePath}app.js?v=10`)
     .replace(/(<a class="brand" href=")[^"]+/, `$1${basePath}`)
     .replace(/(<a href="#library" data-nav="library">)/, `<a href="${libraryPath}" data-nav="library">`)
     .replace(/(<a href="#home" data-nav="home">)/, `<a href="${basePath}" data-nav="home">`)
@@ -92,6 +94,6 @@ export async function buildHomer(bookUrl, outDir, libraryUrl) {
     await save(`terms/${term.id}/`, `${term.name} چیست؟`, term.description, `<div class="page-shell place-detail"><a class="back-link" href="${basePath}story/">→ داستان</a><div class="place-hero"><h1>${escape(term.name)}</h1><p>${escape(term.description)}</p></div>${appearances.length ? `<section class="place-appearances"><h2>سرودهای مرتبط</h2>${list(appearances)}</section>` : ""}</div>`, false);
   }
   await save("voyage/", "سفر اودیسئوس به ترتیب رویدادها", "ترتیب رخدادهای سفر اودیسئوس و تفاوت آن با ترتیب روایت هومر.", `<div class="page-shell"><div class="page-heading"><h1>سفر اودیسئوس به ترتیب رویدادها</h1><p>هومر داستان را از میانه آغاز می‌کند. برای شناختن ترتیب سفر، از <a href="${chapterLink(chapters.find(chapter => chapter.id === "odyssey-09"))}">سرود نهم ادیسه</a> شروع کن و پس از سرود دوازدهم به <a href="${chapterLink(chapters.find(chapter => chapter.id === "odyssey-05"))}">سرود پنجم</a> برگرد. جای دقیق برخی سرزمین‌های اسطوره‌ای قطعی نیست.</p></div>${list(chapters.filter(chapter => chapter.work === "odyssey"))}</div>`);
-  await save("graph/", "گراف شخصیت‌های ایلیاد و ادیسه", "پیوند شخصیت‌ها بر اساس حضور نامشان در بخش‌های مشترک راهنما.", `<div class="page-shell"><div class="page-heading"><h1>پیوندهای شخصیت‌ها</h1><p>گراف تعاملی حضور مشترک شخصیت‌ها در سرودهای راهنما را نشان می‌دهد؛ پیوند در گراف لزوماً خویشاوندی یا دوستی نیست.</p></div><p><a href="${basePath}characters/achilles/">آشیل</a> · <a href="${basePath}characters/odysseus/">اودیسئوس</a> · <a href="${basePath}characters/athena/">آتنا</a></p></div>`);
+  await save("graph/", "گراف شخصیت‌های ایلیاد و ادیسه", "پیوند شخصیت‌ها بر اساس حضور نامشان در بخش‌های مشترک راهنما.", `<div class="page-shell"><div class="page-heading"><h1>پیوندهای شخصیت‌ها</h1><p>گراف تعاملی حضور مشترک شخصیت‌ها در سرودهای راهنما را نشان می‌دهد؛ پیوند در گراف لزوماً خویشاوندی یا دوستی نیست.</p></div>${graphModes(basePath, true)}${renderAllGraph(basePath, false)}</div>`);
   return sitemap;
 }

@@ -1,5 +1,7 @@
 import {chapters, characters, characterDetails, places, readingGuides, extraGlossary, sourceLink} from "./story.js?v=7";
 
+import {graphEdges, graphModes, renderAllGraph} from "./graph.js?v=1";
+
 const main = document.querySelector("#main");
 const searchDialog = document.querySelector("#search-dialog");
 const searchInput = document.querySelector("#search-input");
@@ -150,7 +152,7 @@ function route() {
   if (section === "person" && characterById.has(id)) return {section, id};
   if (section === "place" && placeById.has(id)) return {section, id};
   if (section === "term" && extraTermById.has(id)) return {section, id};
-  if (section === "graph") return {section, id: characterById.has(id) ? id : "achilles"};
+  if (section === "graph") return {section, id: id === "all" || characterById.has(id) ? id : "achilles"};
   if (["home", "story", "people", "voyage"].includes(section)) return {section};
   return {section: "home"};
 }
@@ -277,12 +279,14 @@ function renderTerm(term) {
 }
 
 function renderGraph(id) {
+  const heading = `<div class="page-heading"><span class="eyebrow">گراف داستان</span><h1>پیوندهای شخصیت‌ها</h1><p>خط‌ها نشان می‌دهند نام دو شخصیت در چند بخشِ راهنما کنار هم آمده است؛ به‌تنهایی نشانهٔ دوستی یا خویشاوندی نیستند.</p></div>`;
+  if (id === "all") return `<div class="page-shell">${heading}${graphModes(SITE_BASE, true)}${renderAllGraph(SITE_BASE)}</div>`;
   const center = characterById.get(id);
   const related = characters.map(other => ({person: other, shared: chapters.filter(c => c.characters.includes(id) && c.characters.includes(other.id)).length})).filter(item => item.person.id !== id && item.shared).sort((a,b) => b.shared - a.shared).slice(0, 7);
   const cx = 300, cy = 230, radius = 178;
   const positions = related.map((item, i) => ({...item, x: cx + Math.cos((i / related.length) * Math.PI * 2 - Math.PI / 2) * radius, y: cy + Math.sin((i / related.length) * Math.PI * 2 - Math.PI / 2) * radius}));
   const relatedChapters = chapters.filter(c => c.characters.includes(id));
-  return `<div class="page-shell"><div class="page-heading"><span class="eyebrow">گراف داستان</span><h1>پیوندهای شخصیت‌ها</h1><p>خط‌ها نشان می‌دهند نام دو شخصیت در چند بخشِ راهنما کنار هم آمده است؛ به‌تنهایی نشانهٔ دوستی یا خویشاوندی نیستند.</p></div><div class="graph-layout"><div class="graph-canvas" role="group" aria-label="نمودار پیوندهای ${escapeHtml(center.name)} با شخصیت‌های مرتبط"><svg viewBox="0 0 600 460" aria-hidden="true">${positions.map(p => `<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="#bfa97c" stroke-width="${Math.min(1 + p.shared * .45, 6)}" opacity=".65"/>`).join("")}</svg><a class="graph-node center" href="${characterHref(center)}" style="left:${cx / 6}%;top:${cy / 4.6}%"><strong>${escapeHtml(center.name)}</strong><small>شناختن شخصیت</small></a>${positions.map(p => `<a class="graph-node" href="#graph/${p.person.id}" style="left:${p.x / 6}%;top:${p.y / 4.6}%" title="${faNum(p.shared)} بخش مشترک"><strong>${escapeHtml(p.person.name)}</strong><small>${faNum(p.shared)} بخش</small></a>`).join("")}</div><aside class="graph-panel"><label for="graph-person">شخصیت مرکزی</label><select id="graph-person">${characters.map(c => `<option value="${c.id}" ${c.id === id ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}</select><h2>${escapeHtml(center.name)}</h2><p>${escapeHtml(center.bio)}</p><a class="text-link" href="${characterHref(center)}">پروندهٔ شخصیت ←</a><hr><h3>بخش‌های مرتبط</h3><div class="graph-chapters">${relatedChapters.slice(0, 10).map(c => `<a href="${chapterHref(c)}">${escapeHtml(c.title)} <small>${WORK_NAMES[c.work]} ${chapterLabel(c)}</small></a>`).join("")}${relatedChapters.length > 10 ? `<span class="more-note">و ${faNum(relatedChapters.length - 10)} بخش دیگر در پروندهٔ شخصیت</span>` : ""}</div></aside></div></div>`;
+  return `<div class="page-shell">${heading}${graphModes(SITE_BASE)}<div class="graph-layout"><div class="graph-canvas" role="group" aria-label="نمودار پیوندهای ${escapeHtml(center.name)} با شخصیت‌های مرتبط"><svg viewBox="0 0 600 460" aria-hidden="true">${positions.map(p => `<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="#bfa97c" stroke-width="${Math.min(1 + p.shared * .45, 6)}" opacity=".65"/>`).join("")}</svg><a class="graph-node center" href="${characterHref(center)}" style="left:${cx / 6}%;top:${cy / 4.6}%"><strong>${escapeHtml(center.name)}</strong><small>شناختن شخصیت</small></a>${positions.map(p => `<a class="graph-node" href="#graph/${p.person.id}" style="left:${p.x / 6}%;top:${p.y / 4.6}%" title="${faNum(p.shared)} بخش مشترک"><strong>${escapeHtml(p.person.name)}</strong><small>${faNum(p.shared)} بخش</small></a>`).join("")}</div><aside class="graph-panel"><label for="graph-person">شخصیت مرکزی</label><select id="graph-person">${characters.map(c => `<option value="${c.id}" ${c.id === id ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}</select><h2>${escapeHtml(center.name)}</h2><p>${escapeHtml(center.bio)}</p><a class="text-link" href="${characterHref(center)}">پروندهٔ شخصیت ←</a><hr><h3>بخش‌های مرتبط</h3><div class="graph-chapters">${relatedChapters.slice(0, 10).map(c => `<a href="${chapterHref(c)}">${escapeHtml(c.title)} <small>${WORK_NAMES[c.work]} ${chapterLabel(c)}</small></a>`).join("")}${relatedChapters.length > 10 ? `<span class="more-note">و ${faNum(relatedChapters.length - 10)} بخش دیگر در پروندهٔ شخصیت</span>` : ""}</div></aside></div></div>`;
 }
 
 function renderVoyage() {
@@ -328,6 +332,20 @@ document.addEventListener("click", event => {
   if (mark) { const id = mark.dataset.markRead; readChapters.has(id) ? readChapters.delete(id) : readChapters.add(id); saveProgress(); render(); }
   const term = event.target.closest("[data-search-term]");
   if (term) { searchInput.value = term.dataset.searchTerm; renderSearch(); searchInput.focus(); }
+  const zoom = event.target.closest("[data-graph-zoom]");
+  if (zoom) {
+    const overview = zoom.closest(".graph-overview");
+    const svg = overview.querySelector(".graph-overview-svg");
+    const current = Number(svg.dataset.zoom || 1);
+    const scale = zoom.dataset.graphZoom === "reset" ? 1 : Math.max(1, Math.min(4, current + (zoom.dataset.graphZoom === "in" ? .5 : -.5)));
+    svg.dataset.zoom = scale;
+    overview.classList.toggle("is-zoomed", scale > 1);
+    svg.style.width = `${scale * 100}%`;
+    overview.querySelector("#graph-zoom-value").textContent = `${faNum(scale * 100)}٪`;
+    overview.querySelector('[data-graph-zoom="out"]').disabled = scale === 1;
+    overview.querySelector('[data-graph-zoom="in"]').disabled = scale === 4;
+    if (scale === 1) overview.querySelector(".graph-overview-viewport").scrollTo(0, 0);
+  }
   const result = event.target.closest(".search-result");
   if (result) searchDialog.close();
 });
@@ -345,3 +363,27 @@ document.addEventListener("keydown", event => {
 searchInput.addEventListener("input", renderSearch);
 window.addEventListener("hashchange", render);
 render();
+
+function highlightGraphNode(id) {
+  const svg = main.querySelector(".graph-overview-svg");
+  if (!svg) return;
+  const connected = new Set([id]);
+  for (const edge of graphEdges) {
+    if (edge.source === id) connected.add(edge.target);
+    if (edge.target === id) connected.add(edge.source);
+  }
+  svg.classList.toggle("is-highlighting", Boolean(id));
+  svg.querySelectorAll("[data-graph-node]").forEach(node => node.classList.toggle("is-connected", connected.has(node.dataset.graphNode)));
+  svg.querySelectorAll("line").forEach(line => line.classList.toggle("is-connected", line.dataset.source === id || line.dataset.target === id));
+}
+
+for (const type of ["pointerover", "focusin"]) main.addEventListener(type, event => {
+  const node = event.target.closest("[data-graph-node]");
+  if (node) highlightGraphNode(node.dataset.graphNode);
+});
+for (const type of ["pointerout", "focusout"]) main.addEventListener(type, event => {
+  if (!event.target.closest("[data-graph-node]")) return;
+  const next = event.relatedTarget?.closest?.("[data-graph-node]");
+  const focused = document.activeElement.closest?.("[data-graph-node]");
+  highlightGraphNode(next?.dataset.graphNode || (type === "pointerout" ? focused?.dataset.graphNode : null));
+});
