@@ -1,6 +1,6 @@
 import {chapters, characters, characterDetails, places, readingGuides, extraGlossary, sourceLink} from "./story.js?v=7";
 
-import {graphEdges, graphModes, renderAllGraph, renderCenteredGraph, renderProfileGraph} from "./graph.js?v=3";
+import {overviewEdges, graphModes, renderAllGraph, renderCenteredGraph, renderProfileGraph, selectOverview, renderOverviewNodes} from "./graph.js?v=4";
 
 const main = document.querySelector("#main");
 const searchDialog = document.querySelector("#search-dialog");
@@ -14,6 +14,7 @@ const WORK_NAMES = {iliad: "ایلیاد", bridge: "میان دو داستان",
 const SITE_BASE = new URL("./", import.meta.url).pathname;
 const STORAGE_KEY = "homer-path-read-v1";
 let readChapters = new Set();
+const graphFilters = {includeAdditional: false, hiddenGroups: new Set()};
 
 try {
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
@@ -279,7 +280,7 @@ function renderTerm(term) {
 
 function renderGraph(id) {
   const heading = `<div class="page-heading"><span class="eyebrow">گراف داستان</span><h1>پیوندهای شخصیت‌ها</h1><p>خط‌ها نشان می‌دهند نام دو شخصیت در چند بخشِ راهنما کنار هم آمده است؛ به‌تنهایی نشانهٔ دوستی یا خویشاوندی نیستند.</p></div>`;
-  if (id === "all") return `<div class="page-shell">${heading}${graphModes(SITE_BASE, true)}${renderAllGraph(SITE_BASE)}</div>`;
+  if (id === "all") return `<div class="page-shell">${heading}${graphModes(SITE_BASE, true)}${renderAllGraph(SITE_BASE, true, graphFilters)}</div>`;
   const center = characterById.get(id);
   const relatedChapters = chapters.filter(c => c.characters.includes(id));
   return `<div class="page-shell">${heading}${graphModes(SITE_BASE)}<div class="graph-layout">${renderCenteredGraph(id, SITE_BASE)}<aside class="graph-panel"><label for="graph-person">شخصیت مرکزی</label><select id="graph-person">${characters.map(c => `<option value="${c.id}" ${c.id === id ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}</select><h2>${escapeHtml(center.name)}</h2><p>${escapeHtml(center.bio)}</p><a class="text-link" href="${characterHref(center)}">پروندهٔ شخصیت ←</a><hr><h3>بخش‌های مرتبط</h3><div class="graph-chapters">${relatedChapters.slice(0, 10).map(c => `<a href="${chapterHref(c)}">${escapeHtml(c.title)} <small>${WORK_NAMES[c.work]} ${chapterLabel(c)}</small></a>`).join("")}${relatedChapters.length > 10 ? `<span class="more-note">و ${faNum(relatedChapters.length - 10)} بخش دیگر در پروندهٔ شخصیت</span>` : ""}</div></aside></div></div>`;
@@ -340,6 +341,23 @@ document.addEventListener("click", event => {
   }
   const term = event.target.closest("[data-search-term]");
   if (term) { searchInput.value = term.dataset.searchTerm; renderSearch(); searchInput.focus(); }
+  const groupFilter = event.target.closest("[data-graph-group]");
+  if (groupFilter) {
+    const group = groupFilter.dataset.graphGroup;
+    graphFilters.hiddenGroups.has(group) ? graphFilters.hiddenGroups.delete(group) : graphFilters.hiddenGroups.add(group);
+    updateOverviewFilters(groupFilter.closest(".graph-overview"));
+  }
+  const additional = event.target.closest("[data-graph-additional]");
+  if (additional) {
+    graphFilters.includeAdditional = !graphFilters.includeAdditional;
+    updateOverviewFilters(additional.closest(".graph-overview"));
+  }
+  const resetFilters = event.target.closest("[data-graph-reset]");
+  if (resetFilters) {
+    graphFilters.includeAdditional = false;
+    graphFilters.hiddenGroups.clear();
+    updateOverviewFilters(resetFilters.closest(".graph-overview"));
+  }
   const zoom = event.target.closest("[data-graph-zoom]");
   if (zoom) {
     const overview = zoom.closest(".graph-overview");
@@ -376,7 +394,7 @@ function highlightGraphNode(id) {
   const svg = main.querySelector(".graph-overview-svg");
   if (!svg) return;
   const connected = new Set([id]);
-  for (const edge of graphEdges) {
+  for (const edge of overviewEdges) {
     if (edge.source === id) connected.add(edge.target);
     if (edge.target === id) connected.add(edge.source);
   }
@@ -395,3 +413,24 @@ for (const type of ["pointerout", "focusout"]) main.addEventListener(type, event
   const focused = document.activeElement.closest?.("[data-graph-node]");
   highlightGraphNode(next?.dataset.graphNode || (type === "pointerout" ? focused?.dataset.graphNode : null));
 });
+
+function updateOverviewFilters(overview) {
+  const selection = selectOverview(graphFilters.includeAdditional, graphFilters.hiddenGroups);
+  const svg = overview.querySelector(".graph-overview-svg");
+  svg.innerHTML = renderOverviewNodes(SITE_BASE, selection);
+  svg.setAttribute("viewBox", `0 0 ${selection.width} ${selection.height}`);
+  svg.setAttribute("width", selection.width);
+  svg.setAttribute("height", selection.height);
+  svg.classList.remove("is-highlighting");
+  overview.querySelector("[data-graph-summary]").textContent = `${faNum(selection.nodes.length)} شخصیت از ${faNum(selection.candidates.length)} · ${faNum(selection.edges.length)} پیوند`;
+  overview.querySelector("[data-graph-empty]").hidden = selection.nodes.length > 0;
+  overview.querySelector(".graph-overview-viewport").hidden = selection.nodes.length === 0;
+  overview.querySelector(".graph-zoom").hidden = selection.nodes.length === 0;
+  overview.querySelector("[data-graph-additional]").setAttribute("aria-pressed", String(graphFilters.includeAdditional));
+  for (const button of overview.querySelectorAll("[data-graph-group]")) {
+    const count = selection.candidates.filter(node => node.group === button.dataset.graphGroup).length;
+    button.hidden = count === 0;
+    button.setAttribute("aria-pressed", String(!graphFilters.hiddenGroups.has(button.dataset.graphGroup)));
+    button.querySelector("[data-group-count]").textContent = faNum(count);
+  }
+}

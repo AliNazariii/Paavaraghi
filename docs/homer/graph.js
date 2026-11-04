@@ -1,23 +1,26 @@
 import {chapters, characters} from "./story.js?v=7";
 
+import {additionalCharacters, overviewCharacters, overviewEdges} from "./graph-characters.js?v=1";
+export {additionalCharacters, overviewCharacters, overviewEdges};
+
 const escape = value => String(value).replace(/[&<>"']/g, char => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"})[char]);
 const faNum = value => Number(value).toLocaleString("fa-IR");
-export const graphGroups = [...new Set(characters.map(person => person.group))].map((name, index) => ({name, color: ["#9a6335", "#a44f51", "#347c71", "#5e68a2", "#407f9f", "#846795", "#747245"][index]}));
+export const graphGroups = [...new Set(overviewCharacters.map(person => person.group))].map((name, index) => ({name, color: ["#9a6335", "#a44f51", "#347c71", "#5e68a2", "#407f9f", "#846795", "#747245", "#7a6a57"][index]}));
 export const graphEdges = characters.flatMap((person, index) => characters.slice(index + 1).flatMap(other => {
   const shared = chapters.filter(chapter => chapter.characters.includes(person.id) && chapter.characters.includes(other.id)).length;
   return shared ? [{source: person.id, target: other.id, shared}] : [];
 }));
 
 // A deterministic force layout keeps the complete graph stable between visits.
-function layoutGraph() {
-  const nodes = characters.map((person, index) => {
+function layoutGraph(people = characters, edges = graphEdges, width = 1100, height = 820) {
+  const nodes = people.map((person, index) => {
     const group = graphGroups.findIndex(item => item.name === person.group);
     const angle = group / graphGroups.length * Math.PI * 2 - Math.PI / 2;
-    return {...person, color: graphGroups[group].color, x: 550 + Math.cos(angle) * 290 + Math.cos(index * 2.4) * 100, y: 410 + Math.sin(angle) * 250 + Math.sin(index * 2.4) * 80, homeX: 550 + Math.cos(angle) * 290, homeY: 410 + Math.sin(angle) * 250};
+    return {...person, color: graphGroups[group].color, x: width / 2 + Math.cos(angle) * width * .27 + Math.cos(index * 2.4) * 100, y: height / 2 + Math.sin(angle) * height * .3 + Math.sin(index * 2.4) * 80, homeX: width / 2 + Math.cos(angle) * width * .27, homeY: height / 2 + Math.sin(angle) * height * .3};
   });
   const byId = new Map(nodes.map(node => [node.id, node]));
   for (let step = 0; step < 420; step++) {
-    const forces = new Map(nodes.map(node => [node.id, {x: (550 - node.x) * .003 + (node.homeX - node.x) * .005, y: (410 - node.y) * .003 + (node.homeY - node.y) * .005}]));
+    const forces = new Map(nodes.map(node => [node.id, {x: (width / 2 - node.x) * .003 + (node.homeX - node.x) * .005, y: (height / 2 - node.y) * .003 + (node.homeY - node.y) * .005}]));
     for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
       const a = nodes[i], b = nodes[j];
       const dx = a.x - b.x || .1, dy = a.y - b.y || .1;
@@ -28,7 +31,7 @@ function layoutGraph() {
       forces.get(b.id).x -= dx / distance * force;
       forces.get(b.id).y -= dy / distance * force;
     }
-    for (const edge of graphEdges) {
+    for (const edge of edges) {
       const a = byId.get(edge.source), b = byId.get(edge.target);
       const dx = b.x - a.x, dy = b.y - a.y;
       const distance = Math.max(1, Math.hypot(dx, dy));
@@ -39,8 +42,8 @@ function layoutGraph() {
       forces.get(b.id).y -= dy / distance * force;
     }
     for (const node of nodes) {
-      node.x = Math.max(70, Math.min(1030, node.x + forces.get(node.id).x));
-      node.y = Math.max(45, Math.min(775, node.y + forces.get(node.id).y));
+      node.x = Math.max(70, Math.min(width - 70, node.x + forces.get(node.id).x));
+      node.y = Math.max(45, Math.min(height - 45, node.y + forces.get(node.id).y));
     }
     // Resolve label collisions as rectangles rather than point-sized nodes.
     for (let pass = 0; pass < 3; pass++) for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
@@ -59,21 +62,36 @@ function layoutGraph() {
 }
 
 export const graphNodes = layoutGraph();
-const nodeById = new Map(graphNodes.map(node => [node.id, node]));
+export const overviewNodes = layoutGraph(overviewCharacters, overviewEdges, 1900, 1420);
 
 export function graphModes(basePath, all = false) {
   return `<nav class="graph-modes" aria-label="حالت نمایش گراف"><a href="${basePath}graph/#graph/achilles" ${!all ? 'aria-current="page"' : ""}>شخصیت مرکزی</a><a href="${basePath}graph/#graph/all" ${all ? 'aria-current="page"' : ""}>همهٔ شخصیت‌ها</a></nav>`;
 }
 
-export function renderAllGraph(basePath, interactive = true) {
+export function selectOverview(includeAdditional = false, hiddenGroups = []) {
+  const hidden = new Set(hiddenGroups);
+  const candidates = includeAdditional ? overviewNodes : graphNodes.map(node => ({...node, additional: false, path: `characters/${node.id}/`}));
+  const nodes = candidates.filter(node => !hidden.has(node.group));
+  const ids = new Set(nodes.map(node => node.id));
+  const edges = (includeAdditional ? overviewEdges : graphEdges).filter(edge => ids.has(edge.source) && ids.has(edge.target));
+  return {nodes, edges, candidates, width: includeAdditional ? 1900 : 1100, height: includeAdditional ? 1420 : 820};
+}
+
+export function renderOverviewNodes(basePath, selection) {
+  const byId = new Map(selection.nodes.map(node => [node.id, node]));
+  return `<g class="graph-overview-edges" aria-hidden="true">${selection.edges.map(edge => {const a = byId.get(edge.source), b = byId.get(edge.target); return `<line data-source="${edge.source}" data-target="${edge.target}" x1="${a.x.toFixed(2)}" y1="${a.y.toFixed(2)}" x2="${b.x.toFixed(2)}" y2="${b.y.toFixed(2)}" stroke-width="${Math.min(.6 + edge.shared * .18, 3)}"/>`;}).join("")}</g>
+  ${selection.nodes.map(node => `<a class="graph-overview-node${node.additional ? " is-additional" : ""}" data-graph-node="${node.id}" href="${basePath}${node.path}" aria-label="${escape(node.name)} (${escape(node.englishName)})؛ ${escape(node.group)}؛ باز کردن معرفی شخصیت" style="--group-color:${node.color}"><title>${escape(node.name)} — ${escape(node.group)}</title><rect x="${(node.x - 59).toFixed(2)}" y="${(node.y - 29).toFixed(2)}" width="118" height="58" rx="16"/><text x="${node.x.toFixed(2)}" y="${(node.y - 1).toFixed(2)}" text-anchor="middle" direction="rtl">${escape(node.name)}</text><text class="graph-english-label" x="${node.x.toFixed(2)}" y="${(node.y + 17).toFixed(2)}" text-anchor="middle" lang="en" direction="ltr">${escape(node.englishName)}</text></a>`).join("")}`;
+}
+
+export function renderAllGraph(basePath, interactive = true, filters = {}) {
+  const selection = selectOverview(filters.includeAdditional, filters.hiddenGroups);
   return `<section class="graph-overview" aria-label="گراف همهٔ شخصیت‌ها">
-    <div class="graph-overview-toolbar"><p><strong>${faNum(characters.length)} شخصیت</strong> · ${faNum(graphEdges.length)} پیوند</p><div class="graph-zoom" ${interactive ? "" : "hidden"} role="group" aria-label="بزرگ‌نمایی گراف"><button type="button" data-graph-zoom="in" aria-label="بزرگ‌نمایی">+</button><button type="button" data-graph-zoom="out" aria-label="کوچک‌نمایی" disabled>−</button><button type="button" data-graph-zoom="reset">نمای کامل</button><output id="graph-zoom-value" aria-live="polite">۱۰۰٪</output></div></div>
-    <p class="graph-help" id="graph-help">${interactive ? "روی هر نام برو یا با کلید Tab انتخابش کن تا پیوندهایش روشن شوند؛ برای باز کردن صفحهٔ شخصیت روی نامش بزن. پس از بزرگ‌نمایی، گراف را با پیمایش جابه‌جا کن." : "برای باز کردن صفحهٔ هر شخصیت روی نامش بزن. با فعال کردن جاوااسکریپت، جابه‌جایی بین حالت‌ها و بزرگ‌نمایی گراف هم در دسترس است."}</p>
-    <div class="graph-overview-viewport" tabindex="0" role="region" aria-label="ناحیهٔ قابل پیمایش گراف" aria-describedby="graph-help"><svg class="graph-overview-svg" viewBox="0 0 1100 820" width="1100" height="820" role="group" aria-label="همهٔ شخصیت‌ها و پیوندهای حضور مشترکشان">
-      <g class="graph-overview-edges" aria-hidden="true">${graphEdges.map(edge => {const a = nodeById.get(edge.source), b = nodeById.get(edge.target); return `<line data-source="${edge.source}" data-target="${edge.target}" x1="${a.x.toFixed(2)}" y1="${a.y.toFixed(2)}" x2="${b.x.toFixed(2)}" y2="${b.y.toFixed(2)}" stroke-width="${Math.min(.6 + edge.shared * .18, 3)}"/>`;}).join("")}</g>
-      ${graphNodes.map(node => `<a class="graph-overview-node" data-graph-node="${node.id}" href="${basePath}characters/${node.id}/" aria-label="${escape(node.name)} (${escape(node.englishName)})؛ ${escape(node.group)}؛ باز کردن صفحهٔ شخصیت" style="--group-color:${node.color}"><title>${escape(node.name)} — ${escape(node.group)}</title><rect x="${(node.x - 59).toFixed(2)}" y="${(node.y - 29).toFixed(2)}" width="118" height="58" rx="16"/><text x="${node.x.toFixed(2)}" y="${(node.y - 1).toFixed(2)}" text-anchor="middle" direction="rtl">${escape(node.name)}</text><text class="graph-english-label" x="${node.x.toFixed(2)}" y="${(node.y + 17).toFixed(2)}" text-anchor="middle" lang="en" direction="ltr">${escape(node.englishName)}</text></a>`).join("")}
-    </svg></div>
-    <ul class="graph-legend" aria-label="گروه‌های شخصیت‌ها">${graphGroups.map(group => `<li><span style="background:${group.color}" aria-hidden="true"></span>${escape(group.name)}</li>`).join("")}</ul>
+    <div class="graph-overview-toolbar"><p data-graph-summary aria-live="polite"><strong>${faNum(selection.nodes.length)} شخصیت</strong> از ${faNum(selection.candidates.length)} · ${faNum(selection.edges.length)} پیوند</p><div class="graph-zoom" ${interactive ? "" : "hidden"} role="group" aria-label="بزرگ‌نمایی گراف"><button type="button" data-graph-zoom="in" aria-label="بزرگ‌نمایی">+</button><button type="button" data-graph-zoom="out" aria-label="کوچک‌نمایی" disabled>−</button><button type="button" data-graph-zoom="reset">نمای کامل</button><output id="graph-zoom-value" aria-live="polite">۱۰۰٪</output></div></div>
+    <div class="graph-filter-panel" ${interactive ? "" : "hidden"}><div class="graph-filter-heading"><strong>گروه‌های قابل نمایش</strong><button type="button" data-graph-reset>بازنشانی فیلترها</button></div><div class="graph-group-filters" role="group" aria-label="نمایش یا پنهان کردن گروه‌ها">${graphGroups.map(group => {const count = selection.candidates.filter(node => node.group === group.name).length; return `<button type="button" data-graph-group="${escape(group.name)}" aria-pressed="${!new Set(filters.hiddenGroups).has(group.name)}" style="--group-color:${group.color}" ${count ? "" : "hidden"}><span class="graph-group-dot" aria-hidden="true"></span>${escape(group.name)} <span data-group-count>${faNum(count)}</span></button>`;}).join("")}</div><button type="button" class="graph-additional-toggle" data-graph-additional aria-pressed="${Boolean(filters.includeAdditional)}">شخصیت‌های بیشتر <span>+${faNum(additionalCharacters.length)}</span></button><p>نمای پیش‌فرض، ${faNum(characters.length)} شخصیتِ فهرست اصلی راهنماست. نام‌های بیشتر از واژه‌نامهٔ همین راهنما اضافه می‌شوند؛ این فهرست شامل همهٔ نام‌های متن هومر نیست.</p></div>
+    <p class="graph-help" id="graph-help">${interactive ? "برای پنهان یا آشکار کردن هر گروه روی نامش بزن. روی هر شخصیت برو یا با کلید Tab انتخابش کن تا پیوندهایش روشن شوند؛ با زدن روی نام، معرفی او باز می‌شود." : "برای باز کردن معرفی هر شخصیت روی نامش بزن. با فعال کردن جاوااسکریپت، فیلتر گروه‌ها، شخصیت‌های بیشتر و بزرگ‌نمایی هم در دسترس است."}</p>
+    <p class="graph-empty" data-graph-empty ${selection.nodes.length ? "hidden" : ""} role="status">همهٔ گروه‌ها پنهان شده‌اند. یک گروه را روشن کن یا فیلترها را بازنشانی کن.</p>
+    <div class="graph-overview-viewport" ${selection.nodes.length ? "" : "hidden"} tabindex="0" role="region" aria-label="ناحیهٔ قابل پیمایش گراف" aria-describedby="graph-help"><svg class="graph-overview-svg" viewBox="0 0 ${selection.width} ${selection.height}" width="${selection.width}" height="${selection.height}" role="group" aria-label="شخصیت‌ها و پیوندهای حضور مشترکشان">${renderOverviewNodes(basePath, selection)}</svg></div>
+    <p class="graph-more-note">پیوندها بر پایهٔ حضور نام‌ها در بخش‌های راهنما هستند؛ اندازهٔ نقش یا نسبت خانوادگی را نشان نمی‌دهند.</p>
   </section>`;
 }
 

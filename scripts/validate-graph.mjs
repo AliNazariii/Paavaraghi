@@ -36,3 +36,35 @@ for (const person of characters) {
   assert(profileGraph.includes(`<strong>${person.name}</strong><small>در مرکز گراف</small>`));
 }
 console.log(`Validated centered graphs and strongest related characters on all ${characters.length} profiles.`);
+
+const {additionalCharacters, overviewCharacters, overviewEdges, overviewNodes, graphGroups, selectOverview} = await import('../docs/homer/graph.js');
+assert.equal(new Set(overviewCharacters.map(person => person.id)).size, overviewCharacters.length);
+assert.equal(overviewCharacters.filter(person => person.name === 'آرگوس').length, 1, 'Duplicate Argos');
+const peopleById = new Map(overviewCharacters.map(person => [person.id, person]));
+for (const person of additionalCharacters) {
+  assert(person.chapterIds.length > 0, `No evidence for ${person.id}`);
+  assert(person.chapterIds.every(id => chapters.some(chapter => chapter.id === id)));
+  await readFile(new URL(`../docs/homer/${person.path}index.html`, import.meta.url));
+}
+assert.deepEqual(peopleById.get('xanthus-horse').chapterIds, ['iliad-19'], 'Do not confuse horse Xanthus with the river');
+assert.deepEqual(peopleById.get('hypnos').chapterIds, ['iliad-14'], 'Do not count ordinary sleep as Hypnos');
+for (const edge of overviewEdges) {
+  const a = peopleById.get(edge.source), b = peopleById.get(edge.target);
+  assert(a && b && a !== b);
+  assert.equal(edge.shared, a.chapterIds.filter(id => b.chapterIds.includes(id)).length);
+}
+for (let i = 0; i < overviewNodes.length; i++) {
+  const node = overviewNodes[i];
+  assert(node.x >= 60 && node.x <= 1840 && node.y >= 30 && node.y <= 1390, `Expanded node clipped: ${node.id}`);
+  for (const other of overviewNodes.slice(i + 1)) assert(Math.abs(node.x - other.x) >= 118 || Math.abs(node.y - other.y) >= 58, `Expanded labels overlap: ${node.id}/${other.id}`);
+}
+for (const expanded of [false, true]) for (let mask = 0; mask < 2 ** graphGroups.length; mask++) {
+  const hidden = graphGroups.filter((_, i) => mask & (1 << i)).map(group => group.name);
+  const selected = selectOverview(expanded, hidden);
+  const ids = new Set(selected.nodes.map(person => person.id));
+  assert(selected.nodes.every(person => !hidden.includes(person.group)));
+  assert(selected.edges.every(edge => ids.has(edge.source) && ids.has(edge.target)));
+}
+assert.equal(selectOverview(true, graphGroups.map(group => group.name)).nodes.length, 0);
+assert.equal(selectOverview(false).nodes.length, characters.length);
+console.log(`Validated ${additionalCharacters.length} additional names, ${overviewEdges.length} expanded links, evidence, unique labels and every group-filter combination.`);

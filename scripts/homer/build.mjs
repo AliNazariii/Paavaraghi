@@ -19,8 +19,8 @@ function page(title, description, path, content, indexable = true, image = "shar
   let html = shell
     .replace(/<title>[^<]*<\/title>/, `<title>${escape(title)} | راهِ هومر</title>`)
     .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${escape(description.slice(0, 220))}">`)
-    .replace(/(<link rel="stylesheet" href=")[^"]+/, `$1${basePath}styles.css?v=11`)
-    .replace(/(<script type="module" src=")[^"]+/, `$1${basePath}app.js?v=12`)
+    .replace(/(<link rel="stylesheet" href=")[^"]+/, `$1${basePath}styles.css?v=12`)
+    .replace(/(<script type="module" src=")[^"]+/, `$1${basePath}app.js?v=13`)
     .replace(/(<a class="brand" href=")[^"]+/, `$1${basePath}`)
     .replace(/(<a href="#library" data-nav="library">)/, `<a href="${libraryPath}" data-nav="library">`)
     .replace(/(<a href="#home" data-nav="home">)/, `<a href="${basePath}" data-nav="home">`)
