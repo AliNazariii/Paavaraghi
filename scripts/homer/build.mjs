@@ -2,7 +2,7 @@ import {readFile, mkdir, writeFile} from "node:fs/promises";
 import {join} from "node:path";
 import {chapters, characters, characterDetails, places, readingGuides, extraGlossary, sourceLink} from "../../docs/homer/story.js";
 
-import {graphModes, renderAllGraph} from "../../docs/homer/graph.js";
+import {graphModes, renderAllGraph, renderProfileGraph} from "../../docs/homer/graph.js";
 
 const shell = await readFile(new URL("./shell.html", import.meta.url), "utf8");
 let root, siteUrl, basePath, libraryPath, sitemap;
@@ -19,8 +19,8 @@ function page(title, description, path, content, indexable = true, image = "shar
   let html = shell
     .replace(/<title>[^<]*<\/title>/, `<title>${escape(title)} | راهِ هومر</title>`)
     .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${escape(description.slice(0, 220))}">`)
-    .replace(/(<link rel="stylesheet" href=")[^"]+/, `$1${basePath}styles.css?v=9`)
-    .replace(/(<script type="module" src=")[^"]+/, `$1${basePath}app.js?v=10`)
+    .replace(/(<link rel="stylesheet" href=")[^"]+/, `$1${basePath}styles.css?v=10`)
+    .replace(/(<script type="module" src=")[^"]+/, `$1${basePath}app.js?v=11`)
     .replace(/(<a class="brand" href=")[^"]+/, `$1${basePath}`)
     .replace(/(<a href="#library" data-nav="library">)/, `<a href="${libraryPath}" data-nav="library">`)
     .replace(/(<a href="#home" data-nav="home">)/, `<a href="${basePath}" data-nav="home">`)
@@ -60,7 +60,7 @@ function chapterPage(chapter) {
 
 function personPage(person) {
   const appearances = chapters.filter(chapter => chapter.characters.includes(person.id));
-  return `<div class="page-shell person-detail"><a class="back-link" href="${basePath}characters/">→ همهٔ شخصیت‌ها</a><div class="person-hero"><span class="person-big-monogram" aria-hidden="true">${escape(person.name[0])}</span><div><span class="eyebrow">${escape(person.group)}</span><h1>${escape(person.name)} <bdi class="person-english" lang="en">(${escape(person.englishName)})</bdi></h1><p>${escape(person.bio)}</p>${characterDetails[person.id] ? `<p>${escape(characterDetails[person.id])}</p>` : ""}${person.aliases.length ? `<p>نام‌های دیگر: ${person.aliases.map(escape).join("، ")}</p>` : ""}</div></div><section class="place-appearances"><h2>در کدام بخش‌ها نامش آمده؟</h2>${list(appearances)}</section></div>`;
+  return `<div class="page-shell person-detail"><a class="back-link" href="${basePath}characters/">→ همهٔ شخصیت‌ها</a><div class="person-hero"><span class="person-big-monogram" aria-hidden="true">${escape(person.name[0])}</span><div><span class="eyebrow">${escape(person.group)}</span><h1>${escape(person.name)} <bdi class="person-english" lang="en">(${escape(person.englishName)})</bdi></h1><p>${escape(person.bio)}</p>${characterDetails[person.id] ? `<p>${escape(characterDetails[person.id])}</p>` : ""}${person.aliases.length ? `<p>نام‌های دیگر: ${person.aliases.map(escape).join("، ")}</p>` : ""}</div></div>${renderProfileGraph(person.id, basePath)}<section class="place-appearances"><h2>در کدام بخش‌ها نامش آمده؟</h2>${list(appearances)}</section></div>`;
 }
 
 const intro = {

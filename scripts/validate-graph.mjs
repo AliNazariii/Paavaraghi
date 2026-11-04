@@ -1,6 +1,7 @@
+import {readFile} from "node:fs/promises";
 import assert from "node:assert/strict";
 import {chapters, characters} from "../docs/homer/story.js";
-import {graphNodes, graphEdges, renderAllGraph} from "../docs/homer/graph.js";
+import {graphNodes, graphEdges, renderAllGraph, relatedCharacters, renderProfileGraph} from "../docs/homer/graph.js";
 
 assert.deepEqual(new Set(graphNodes.map(node => node.id)), new Set(characters.map(person => person.id)));
 const edgeByPair = new Map(graphEdges.map(edge => [`${edge.source}/${edge.target}`, edge]));
@@ -21,3 +22,17 @@ for (let i = 0; i < graphNodes.length; i++) {
 const html = renderAllGraph("/homer/");
 for (const person of characters) assert(html.includes(`href="/homer/characters/${person.id}/"`), `Missing profile link: ${person.id}`);
 console.log(`Validated complete graph: ${graphNodes.length} nodes, ${graphEdges.length} weighted edges, unclipped labels and profile links.`);
+
+for (const person of characters) {
+  const related = relatedCharacters(person.id);
+  assert(related.length <= 7);
+  assert(related.every(item => item.person.id !== person.id && item.shared > 0));
+  const expected = graphEdges.filter(edge => edge.source === person.id || edge.target === person.id).map(edge => edge.shared).sort((a, b) => b - a).slice(0, 7);
+  assert.deepEqual(related.map(item => item.shared), expected);
+  const profileGraph = renderProfileGraph(person.id, "/homer/");
+  const html = await readFile(new URL(`../docs/homer/characters/${person.id}/index.html`, import.meta.url), "utf8");
+  assert(html.includes(profileGraph), `Missing centered graph on profile: ${person.id}`);
+  for (const item of related) assert(profileGraph.includes(`href="/homer/characters/${item.person.id}/"`));
+  assert(profileGraph.includes(`<strong>${person.name}</strong><small>در مرکز گراف</small>`));
+}
+console.log(`Validated centered graphs and strongest related characters on all ${characters.length} profiles.`);

@@ -76,3 +76,31 @@ export function renderAllGraph(basePath, interactive = true) {
     <ul class="graph-legend" aria-label="گروه‌های شخصیت‌ها">${graphGroups.map(group => `<li><span style="background:${group.color}" aria-hidden="true"></span>${escape(group.name)}</li>`).join("")}</ul>
   </section>`;
 }
+
+export function relatedCharacters(id, limit = 7) {
+  return graphEdges.filter(edge => edge.source === id || edge.target === id)
+    .map(edge => ({person: characters.find(person => person.id === (edge.source === id ? edge.target : edge.source)), shared: edge.shared}))
+    .sort((a, b) => b.shared - a.shared || characters.indexOf(a.person) - characters.indexOf(b.person))
+    .slice(0, limit);
+}
+
+export function renderCenteredGraph(id, basePath, profileLinks = false) {
+  const center = characters.find(person => person.id === id);
+  const related = relatedCharacters(id);
+  const cx = 300, cy = 230, radius = 178;
+  const positions = related.map((item, index) => ({...item,
+    x: cx + Math.cos(index / related.length * Math.PI * 2 - Math.PI / 2) * radius,
+    y: cy + Math.sin(index / related.length * Math.PI * 2 - Math.PI / 2) * radius
+  }));
+  const centerContent = `<strong>${escape(center.name)}</strong><small>${profileLinks ? "در مرکز گراف" : "شناختن شخصیت"}</small>`;
+  return `<div class="graph-canvas" role="group" aria-label="نمودار پیوندهای ${escape(center.name)} با شخصیت‌های مرتبط">
+    <svg viewBox="0 0 600 460" preserveAspectRatio="none" aria-hidden="true">${positions.map(node => `<line x1="${cx}" y1="${cy}" x2="${node.x}" y2="${node.y}" stroke="#bfa97c" stroke-width="${Math.min(1 + node.shared * .45, 6)}" opacity=".65"/>`).join("")}</svg>
+    ${profileLinks ? `<span class="graph-node center" style="left:50%;top:50%">${centerContent}</span>` : `<a class="graph-node center" href="${basePath}characters/${center.id}/" style="left:50%;top:50%">${centerContent}</a>`}
+    ${positions.map(node => `<a class="graph-node" href="${basePath}${profileLinks ? `characters/${node.person.id}/` : `graph/#graph/${node.person.id}`}" style="left:${node.x / 6}%;top:${node.y / 4.6}%" title="${faNum(node.shared)} بخش مشترک"><strong>${escape(node.person.name)}</strong><small>${faNum(node.shared)} بخش مشترک</small></a>`).join("")}
+  </div>`;
+}
+
+export function renderProfileGraph(id, basePath) {
+  const person = characters.find(person => person.id === id);
+  return `<section class="person-graph" aria-labelledby="person-graph-heading"><div class="person-graph-heading"><h2 id="person-graph-heading">پیوندهای ${escape(person.name)}</h2><a class="text-link" href="${basePath}graph/#graph/${id}">باز کردن گراف ←</a></div><p>شخصیت‌های پیرامون، بیشترین بخش‌های مشترک را با ${escape(person.name)} دارند. خط‌ها نشانهٔ حضور مشترک در راهنما هستند؛ به‌تنهایی نسبت خانوادگی یا دوستی را نشان نمی‌دهند. با زدن روی هر نام، صفحهٔ همان شخصیت باز می‌شود.</p>${renderCenteredGraph(id, basePath, true)}<a class="text-link person-graph-all" href="${basePath}graph/#graph/all">دیدن همهٔ شخصیت‌ها در یک گراف ←</a></section>`;
+}

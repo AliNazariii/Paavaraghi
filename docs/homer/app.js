@@ -1,6 +1,6 @@
 import {chapters, characters, characterDetails, places, readingGuides, extraGlossary, sourceLink} from "./story.js?v=7";
 
-import {graphEdges, graphModes, renderAllGraph} from "./graph.js?v=1";
+import {graphEdges, graphModes, renderAllGraph, renderCenteredGraph, renderProfileGraph} from "./graph.js?v=2";
 
 const main = document.querySelector("#main");
 const searchDialog = document.querySelector("#search-dialog");
@@ -251,7 +251,7 @@ function renderChapter(c) {
       <section class="reader-section"><h2>کجا هستیم؟</h2><div class="place-card"><span class="place-pin" aria-hidden="true">⌖</span><div><strong><a href="${placeHref(place)}">${escapeHtml(place.name)} ↖</a></strong><p>${renderAnnotated(place.bio)}</p></div></div></section>
       ${relatedQuestions.length ? `<section class="reader-section"><h2>اگر این سؤال را داری…</h2>${relatedQuestions.map(q => `<details class="faq-item"><summary>${escapeHtml(q.question)}</summary><p>${renderAnnotated(q.answer)}</p></details>`).join("")}</section>` : `<section class="reader-section"><h2>برای به‌خاطر سپردن</h2><details class="faq-item"><summary>چرا «${escapeHtml(c.title)}» در داستان مهم است؟</summary><p>${renderAnnotated(c.why)}</p></details></section>`}
       <div class="source-line"><span>جایگاه در روایت: ${escapeHtml(c.source.replace(/\d+/g, number => faNum(Number(number))))}</span>${source ? `<a href="${source}" target="_blank" rel="noopener noreferrer">${c.work === "bridge" ? "دیدن اشاره در ادیسه ↗" : "دیدن متن مرجع ↗"}</a>` : ""}</div>
-      <button class="mark-read ${readChapters.has(c.id) ? "is-read" : ""}" data-mark-read="${c.id}" type="button">${readChapters.has(c.id) ? "✓ خوانده شد — برای برداشتن علامت بزن" : "✓ این بخش را خواندم"}</button>
+      <button class="mark-read ${readChapters.has(c.id) ? "is-read" : ""}" data-mark-read="${c.id}" aria-pressed="${readChapters.has(c.id)}" type="button">${readChapters.has(c.id) ? "✓ خوانده شد — برای برداشتن علامت بزن" : "✓ این بخش را خواندم"}</button>
       <nav class="reader-pager" aria-label="بخش‌های مجاور">${prev ? `<a href="${chapterHref(prev)}"><small>بخش قبلی</small><strong>→ ${escapeHtml(prev.title)}</strong></a>` : `<span></span>`}${next ? `<a href="${chapterHref(next)}"><small>بخش بعدی</small><strong>${escapeHtml(next.title)} ←</strong></a>` : `<span></span>`}</nav>
     </article><aside class="context-sidebar"><div class="context-card"><span class="eyebrow">در این نقطه</span><h2>${WORK_NAMES[c.work]}</h2><p>${chapterLabel(c)} · بخش ${faNum(index + 1)} از ${faNum(chapters.length)}</p><div class="context-progress"><span style="height:${Math.max(4, (index + 1) / chapters.length * 100)}%"></span></div></div><div class="context-card muted"><h2>بعد چه می‌شود؟</h2><p>${next ? escapeHtml(next.title) : "به پایان مسیر رسیده‌ای."}</p>${next ? `<a class="text-link" href="${chapterHref(next)}">ادامه بده ←</a>` : `<a class="text-link" href="${SITE_BASE}">بازگشت به آغاز ←</a>`}</div></aside></div></div>`;
 }
@@ -264,7 +264,7 @@ function renderPeople() {
 function renderPerson(person) {
   const appearances = chapters.filter(c => c.characters.includes(person.id));
   const related = characters.map(other => ({person: other, shared: chapters.filter(c => c.characters.includes(person.id) && c.characters.includes(other.id)).length})).filter(item => item.person.id !== person.id && item.shared).sort((a,b) => b.shared - a.shared).slice(0, 8);
-  return `<div class="page-shell person-detail"><a class="back-link" href="${SITE_BASE}characters/">→ همهٔ شخصیت‌ها</a><div class="person-hero"><span class="person-big-monogram" aria-hidden="true">${escapeHtml(person.name[0])}</span><div><span class="eyebrow">${escapeHtml(person.group)}</span><h1>${escapeHtml(person.name)} <bdi class="person-english" lang="en">(${escapeHtml(person.englishName)})</bdi></h1><p>${escapeHtml(person.bio)}</p>${person.aliases.length ? `<div class="aliases">نام‌های دیگر: ${person.aliases.map(escapeHtml).join("، ")}</div>` : ""}</div></div><div class="person-detail-grid"><section><h2>در کدام بخش‌ها نامش آمده؟</h2><div class="chapter-list compact">${appearances.map(chapterRow).join("")}</div></section><aside><div class="context-card"><h2>پیوندهای داستانی</h2><p>نام این شخصیت‌ها در یک یا چند بخش مشترک آمده است.</p><div class="related-list">${related.map(item => `<a href="${characterHref(item.person)}">${escapeHtml(item.person.name)} <span>${faNum(item.shared)} بخش مشترک ←</span></a>`).join("")}</div><a class="button button-dark" href="${SITE_BASE}graph/#graph/${person.id}">دیدن در گراف</a></div></aside></div></div>`;
+  return `<div class="page-shell person-detail"><a class="back-link" href="${SITE_BASE}characters/">→ همهٔ شخصیت‌ها</a><div class="person-hero"><span class="person-big-monogram" aria-hidden="true">${escapeHtml(person.name[0])}</span><div><span class="eyebrow">${escapeHtml(person.group)}</span><h1>${escapeHtml(person.name)} <bdi class="person-english" lang="en">(${escapeHtml(person.englishName)})</bdi></h1><p>${escapeHtml(person.bio)}</p>${person.aliases.length ? `<div class="aliases">نام‌های دیگر: ${person.aliases.map(escapeHtml).join("، ")}</div>` : ""}</div></div>${renderProfileGraph(person.id, SITE_BASE)}<div class="person-detail-grid"><section><h2>در کدام بخش‌ها نامش آمده؟</h2><div class="chapter-list compact">${appearances.map(chapterRow).join("")}</div></section><aside><div class="context-card"><h2>پیوندهای داستانی</h2><p>نام این شخصیت‌ها در یک یا چند بخش مشترک آمده است.</p><div class="related-list">${related.map(item => `<a href="${characterHref(item.person)}">${escapeHtml(item.person.name)} <span>${faNum(item.shared)} بخش مشترک ←</span></a>`).join("")}</div><a class="button button-dark" href="${SITE_BASE}graph/#graph/${person.id}">دیدن در گراف</a></div></aside></div></div>`;
 }
 
 function renderPlace(place) {
@@ -282,11 +282,8 @@ function renderGraph(id) {
   const heading = `<div class="page-heading"><span class="eyebrow">گراف داستان</span><h1>پیوندهای شخصیت‌ها</h1><p>خط‌ها نشان می‌دهند نام دو شخصیت در چند بخشِ راهنما کنار هم آمده است؛ به‌تنهایی نشانهٔ دوستی یا خویشاوندی نیستند.</p></div>`;
   if (id === "all") return `<div class="page-shell">${heading}${graphModes(SITE_BASE, true)}${renderAllGraph(SITE_BASE)}</div>`;
   const center = characterById.get(id);
-  const related = characters.map(other => ({person: other, shared: chapters.filter(c => c.characters.includes(id) && c.characters.includes(other.id)).length})).filter(item => item.person.id !== id && item.shared).sort((a,b) => b.shared - a.shared).slice(0, 7);
-  const cx = 300, cy = 230, radius = 178;
-  const positions = related.map((item, i) => ({...item, x: cx + Math.cos((i / related.length) * Math.PI * 2 - Math.PI / 2) * radius, y: cy + Math.sin((i / related.length) * Math.PI * 2 - Math.PI / 2) * radius}));
   const relatedChapters = chapters.filter(c => c.characters.includes(id));
-  return `<div class="page-shell">${heading}${graphModes(SITE_BASE)}<div class="graph-layout"><div class="graph-canvas" role="group" aria-label="نمودار پیوندهای ${escapeHtml(center.name)} با شخصیت‌های مرتبط"><svg viewBox="0 0 600 460" aria-hidden="true">${positions.map(p => `<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="#bfa97c" stroke-width="${Math.min(1 + p.shared * .45, 6)}" opacity=".65"/>`).join("")}</svg><a class="graph-node center" href="${characterHref(center)}" style="left:${cx / 6}%;top:${cy / 4.6}%"><strong>${escapeHtml(center.name)}</strong><small>شناختن شخصیت</small></a>${positions.map(p => `<a class="graph-node" href="#graph/${p.person.id}" style="left:${p.x / 6}%;top:${p.y / 4.6}%" title="${faNum(p.shared)} بخش مشترک"><strong>${escapeHtml(p.person.name)}</strong><small>${faNum(p.shared)} بخش</small></a>`).join("")}</div><aside class="graph-panel"><label for="graph-person">شخصیت مرکزی</label><select id="graph-person">${characters.map(c => `<option value="${c.id}" ${c.id === id ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}</select><h2>${escapeHtml(center.name)}</h2><p>${escapeHtml(center.bio)}</p><a class="text-link" href="${characterHref(center)}">پروندهٔ شخصیت ←</a><hr><h3>بخش‌های مرتبط</h3><div class="graph-chapters">${relatedChapters.slice(0, 10).map(c => `<a href="${chapterHref(c)}">${escapeHtml(c.title)} <small>${WORK_NAMES[c.work]} ${chapterLabel(c)}</small></a>`).join("")}${relatedChapters.length > 10 ? `<span class="more-note">و ${faNum(relatedChapters.length - 10)} بخش دیگر در پروندهٔ شخصیت</span>` : ""}</div></aside></div></div>`;
+  return `<div class="page-shell">${heading}${graphModes(SITE_BASE)}<div class="graph-layout">${renderCenteredGraph(id, SITE_BASE)}<aside class="graph-panel"><label for="graph-person">شخصیت مرکزی</label><select id="graph-person">${characters.map(c => `<option value="${c.id}" ${c.id === id ? "selected" : ""}>${escapeHtml(c.name)}</option>`).join("")}</select><h2>${escapeHtml(center.name)}</h2><p>${escapeHtml(center.bio)}</p><a class="text-link" href="${characterHref(center)}">پروندهٔ شخصیت ←</a><hr><h3>بخش‌های مرتبط</h3><div class="graph-chapters">${relatedChapters.slice(0, 10).map(c => `<a href="${chapterHref(c)}">${escapeHtml(c.title)} <small>${WORK_NAMES[c.work]} ${chapterLabel(c)}</small></a>`).join("")}${relatedChapters.length > 10 ? `<span class="more-note">و ${faNum(relatedChapters.length - 10)} بخش دیگر در پروندهٔ شخصیت</span>` : ""}</div></aside></div></div>`;
 }
 
 function renderVoyage() {
@@ -329,7 +326,19 @@ document.addEventListener("click", event => {
   const trigger = event.target.closest("#search-open");
   if (trigger) { searchDialog.showModal(); searchInput.focus(); renderSearch(); }
   const mark = event.target.closest("[data-mark-read]");
-  if (mark) { const id = mark.dataset.markRead; readChapters.has(id) ? readChapters.delete(id) : readChapters.add(id); saveProgress(); render(); }
+  if (mark) {
+    const id = mark.dataset.markRead;
+    if (!chapterById.has(id)) return;
+    readChapters.has(id) ? readChapters.delete(id) : readChapters.add(id);
+    saveProgress();
+    const done = readChapters.has(id);
+    mark.classList.toggle("is-read", done);
+    mark.setAttribute("aria-pressed", String(done));
+    mark.textContent = done ? "✓ خوانده شد — برای برداشتن علامت بزن" : "✓ این بخش را خواندم";
+    const sidebarItem = main.querySelector('.sidebar-item[aria-current="page"]');
+    sidebarItem?.querySelector("i")?.remove();
+    if (done) sidebarItem?.insertAdjacentHTML("beforeend", '<i aria-label="خوانده‌شده">✓</i>');
+  }
   const term = event.target.closest("[data-search-term]");
   if (term) { searchInput.value = term.dataset.searchTerm; renderSearch(); searchInput.focus(); }
   const zoom = event.target.closest("[data-graph-zoom]");
