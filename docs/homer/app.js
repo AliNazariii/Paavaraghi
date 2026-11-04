@@ -1,6 +1,6 @@
 import {chapters, characters, characterDetails, places, readingGuides, extraGlossary, sourceLink} from "./story.js?v=7";
 
-import {graphEdges, graphModes, renderAllGraph, renderCenteredGraph, renderProfileGraph} from "./graph.js?v=2";
+import {graphEdges, graphModes, renderAllGraph, renderCenteredGraph, renderProfileGraph} from "./graph.js?v=3";
 
 const main = document.querySelector("#main");
 const searchDialog = document.querySelector("#search-dialog");
@@ -263,8 +263,7 @@ function renderPeople() {
 
 function renderPerson(person) {
   const appearances = chapters.filter(c => c.characters.includes(person.id));
-  const related = characters.map(other => ({person: other, shared: chapters.filter(c => c.characters.includes(person.id) && c.characters.includes(other.id)).length})).filter(item => item.person.id !== person.id && item.shared).sort((a,b) => b.shared - a.shared).slice(0, 8);
-  return `<div class="page-shell person-detail"><a class="back-link" href="${SITE_BASE}characters/">→ همهٔ شخصیت‌ها</a><div class="person-hero"><span class="person-big-monogram" aria-hidden="true">${escapeHtml(person.name[0])}</span><div><span class="eyebrow">${escapeHtml(person.group)}</span><h1>${escapeHtml(person.name)} <bdi class="person-english" lang="en">(${escapeHtml(person.englishName)})</bdi></h1><p>${escapeHtml(person.bio)}</p>${person.aliases.length ? `<div class="aliases">نام‌های دیگر: ${person.aliases.map(escapeHtml).join("، ")}</div>` : ""}</div></div>${renderProfileGraph(person.id, SITE_BASE)}<div class="person-detail-grid"><section><h2>در کدام بخش‌ها نامش آمده؟</h2><div class="chapter-list compact">${appearances.map(chapterRow).join("")}</div></section><aside><div class="context-card"><h2>پیوندهای داستانی</h2><p>نام این شخصیت‌ها در یک یا چند بخش مشترک آمده است.</p><div class="related-list">${related.map(item => `<a href="${characterHref(item.person)}">${escapeHtml(item.person.name)} <span>${faNum(item.shared)} بخش مشترک ←</span></a>`).join("")}</div><a class="button button-dark" href="${SITE_BASE}graph/#graph/${person.id}">دیدن در گراف</a></div></aside></div></div>`;
+  return `<div class="page-shell person-detail"><a class="back-link" href="${SITE_BASE}characters/">→ همهٔ شخصیت‌ها</a><div class="person-hero"><span class="person-big-monogram" aria-hidden="true">${escapeHtml(person.name[0])}</span><div><span class="eyebrow">${escapeHtml(person.group)}</span><h1>${escapeHtml(person.name)} <bdi class="person-english" lang="en">(${escapeHtml(person.englishName)})</bdi></h1><p>${escapeHtml(person.bio)}</p>${person.aliases.length ? `<div class="aliases">نام‌های دیگر: ${person.aliases.map(escapeHtml).join("، ")}</div>` : ""}</div></div><div class="person-profile-content">${renderProfileGraph(person.id, SITE_BASE)}<section class="person-appearances"><h2>در کدام بخش‌ها نامش آمده؟</h2><div class="chapter-list compact">${appearances.map(chapterRow).join("")}</div></section></div></div>`;
 }
 
 function renderPlace(place) {
