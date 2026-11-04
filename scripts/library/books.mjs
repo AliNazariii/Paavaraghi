@@ -1,6 +1,7 @@
 import {chapters} from "../../docs/homer/story.js";
 import {stories} from "../franny-and-zooey/content.mjs";
 import {chapters as drownedChapters} from "../ahl-e-gharq/chapters.mjs";
+import {stories as moonStories} from "../nimeye-tarik-e-mah/content.mjs";
 
 const faNum = value => String(value).replace(/\d/g, digit => "۰۱۲۳۴۵۶۷۸۹"[digit]);
 const count = work => chapters.filter(chapter => chapter.work === work).length;
@@ -40,5 +41,16 @@ export const books = [
     mark: "≈",
     theme: {bg: "#173f45", panel: "#286570", ink: "#f5f0e5", soft: "#cedddb", accent: "#edc18a"},
     parts: [{label: "همراه فصل‌ها", path: "chapters/"}, {label: "نقد و گفت‌وگو", path: "analysis/"}]
+  },
+  {
+    id: "nimeye-tarik-e-mah",
+    path: "nimeye-tarik-e-mah/",
+    title: "نیمهٔ تاریک ماه",
+    author: "هوشنگ گلشیری",
+    description: "سی‌وشش داستان کوتاه، از چنار تا زندانی باغان؛ همراهی برای خواندنِ صداها، خاطره‌ها و نیمه‌های نادیدهٔ روایت.",
+    meta: `${faNum(moonStories.length)} داستان · مرور و گفت‌وگو`,
+    mark: "◐",
+    theme: {bg: "#252a49", panel: "#363b60", ink: "#f4f0e8", soft: "#d8d6e2", accent: "#e4d1ab"},
+    parts: [{label: "۳۶ داستان", path: "stories/"}, {label: "نکته‌های خواندن", path: "themes/"}]
   }
 ];

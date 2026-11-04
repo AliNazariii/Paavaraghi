@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import {readFile,stat} from 'node:fs/promises';
+import {join} from 'node:path';
+import {stories,themes,sources} from './nimeye-tarik-e-mah/content.mjs';
+import {notes} from './nimeye-tarik-e-mah/notes.mjs';
+import {docsRoot,SITE_URL} from './site-config.mjs';
+const root=join(docsRoot,'nimeye-tarik-e-mah');
+assert.equal(stories.length,36);
+assert.equal(notes.length,36,'Every catalog entry must have its own reading note');
+assert.equal(new Set(stories.map(s=>s.id)).size,36);
+assert.equal(new Set(stories.map(s=>s.title)).size,36);
+assert.equal(new Set(stories.map(s=>s.recap)).size,36);
+assert.equal(stories[0].title,'چنار');
+assert.equal(stories.at(-1).title,'زندانی باغان');
+assert.equal(stories.find(s=>s.id==='jomalieh').title,'شرحی بر قصیدهٔ جملیه');
+assert.equal(stories.find(s=>s.id==='ganjnameh').date,'آبان ۱۳۷۴');
+for(const s of stories){
+  assert.ok(s.subtitle?.length>5);
+  for(const field of ['introduction','recap','question','focus']) assert.ok(s[field]?.length>25,`${s.id}: missing ${field}`);
+  assert.ok(s.endPage>=s.page);
+  assert.ok(s.tags.every(tag=>themes.some(t=>t.title===tag)));
+  const html=await readFile(join(root,'stories',s.id,'index.html'),'utf8');
+  assert.match(html,/<details class="spoiler" id="after">/,'Recaps must start closed');
+  assert.ok(html.includes(s.recap));
+  assert.ok(html.includes(`data-mark-read="${s.id}"`));
+  assert.ok(html.includes(new URL(`nimeye-tarik-e-mah/stories/${s.id}/`,SITE_URL).href));
+}
+for(const t of themes) for(const id of t.stories) assert.ok(stories.some(s=>s.id===id));
+assert.equal(new Set(sources.map(s=>s.id)).size,sources.length);
+for(const s of sources) assert.equal(new URL(s.url).protocol,'https:');
+for(const path of ['index.html','stories/index.html','themes/index.html','sources/index.html','app.js','styles.css','share-cover.svg','share-cover.png']) await stat(join(root,path));
+const home=await readFile(join(docsRoot,'index.html'),'utf8');
+assert.ok(home.includes('نیمهٔ تاریک ماه'));
+const client=await readFile(join(root,'app.js'),'utf8');
+assert.ok(client.includes('paavaraghi:nimeye-tarik-e-mah:read:v1'));
+console.log('Validated Nimeye Tarik-e Mah: 36 stories, closed recaps, source references, themes and guide assets.');

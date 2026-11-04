@@ -13,6 +13,7 @@ The home page is a shelf of book cards. Pick a book to open its guide. Every gui
 | Homer, *Iliad* and *Odyssey* | [/homer/](https://paavaraghi.ir/homer/) |
 | J. D. Salinger, *Franny and Zooey* | [/franny-and-zooey/](https://paavaraghi.ir/franny-and-zooey/) |
 | Moniru Ravanipour, *Ahl-e Gharq (The Drowned)* | [/ahl-e-gharq/](https://paavaraghi.ir/ahl-e-gharq/) |
+| Houshang Golshiri, *Nimeye Tarik-e Mah (The Dark Half of the Moon)* | [/nimeye-tarik-e-mah/](https://paavaraghi.ir/nimeye-tarik-e-mah/) |
 
 More books will be added over time.
 
@@ -41,6 +42,12 @@ The guide follows all 34 numbered chapters of the Khaneh Aftab second printing (
 
 The sea-and-paper design includes original artwork and locally served Vazirmatn fonts (SIL Open Font License, included with the font files). Content and disclosures work without JavaScript. Optional chapter search accepts Persian and Arabic digits and letter variants; reading progress stays in the browser under its own book-specific key. The novel and research scan are not redistributed.
 
+### Golshiri: *Nimeye Tarik-e Mah (The Dark Half of the Moon)*
+
+The guide follows the 36 stories in the Niloofar first printing (spring 1380), with a searchable index, original before-reading notes, closed short recaps, discussion questions, five editorial reading themes, and an annotated source page. Titles, order, page references, and dates were checked against a research scan; the source page explains date and spelling discrepancies in web lists. Recaps are brief reading aids rather than exhaustive plot summaries. The scan is not redistributed.
+
+The indigo-and-paper guide uses the existing local Vazirmatn fonts. Search normalizes Persian/Arabic letters and digits. Story progress is saved only in the browser under a separate book key; content and spoiler disclosures work without JavaScript.
+
 ## Run locally
 
 You need Node.js. There is nothing to install.
@@ -61,6 +68,7 @@ docs/
   homer/                      Homer guide: story.js, app.js, styles.css, generated pages
   franny-and-zooey/            Salinger guide: styles, progress script, share cover, generated pages
   ahl-e-gharq/                 Ravanipour guide: styles, local fonts, artwork, progress script, generated pages
+  nimeye-tarik-e-mah/          Golshiri guide: 36 story pages, index, themes, source notes, progress script
 scripts/
   site-config.mjs             site URL and base path (override with SITE_URL)
   build-site.mjs              builds the library, every book, and sitemap.xml
@@ -68,6 +76,7 @@ scripts/
   homer/                      Homer page template and generator
   franny-and-zooey/            Salinger content and page generator
   ahl-e-gharq/                 Ravanipour chapter notes, research references, and page generator
+  nimeye-tarik-e-mah/          Golshiri catalog, original reading notes, sources, and page generator
   validate-*.mjs              content and site checks
 ```
 
