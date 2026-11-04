@@ -24,3 +24,4 @@
 @media(max-width:600px){.reading-guide{padding:17px 18px}.term-tip{position:fixed;top:auto;right:16px;left:16px;bottom:16px;width:auto;max-width:none;z-index:50;font-size:13px}.place-hero{padding:25px}.place-hero h1{font-size:31px}}
 @media(hover:none){.inline-term:hover .term-tip{visibility:hidden;opacity:0}}
 .person-card .person-english{color:#68777a;font-size:.75em;font-weight:500;white-space:nowrap}
+.person-hero .person-english{display:inline-block;color:#d8e1dd;font-size:.65em;font-weight:500}
