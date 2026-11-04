@@ -4,6 +4,8 @@ import {chapters, characters, characterDetails, places, readingGuides, extraGlos
 
 import {graphModes, renderAllGraph, renderProfileGraph} from "../../docs/homer/graph.js";
 
+import {renderPlaces} from "../../docs/homer/places.js";
+
 const shell = await readFile(new URL("./shell.html", import.meta.url), "utf8");
 let root, siteUrl, basePath, libraryPath, sitemap;
 const escape = value => String(value).replace(/[&<>"']/g, character => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"})[character]);
@@ -19,13 +21,14 @@ function page(title, description, path, content, indexable = true, image = "shar
   let html = shell
     .replace(/<title>[^<]*<\/title>/, `<title>${escape(title)} | راهِ هومر</title>`)
     .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${escape(description.slice(0, 220))}">`)
-    .replace(/(<link rel="stylesheet" href=")[^"]+/, `$1${basePath}styles.css?v=12`)
-    .replace(/(<script type="module" src=")[^"]+/, `$1${basePath}app.js?v=13`)
+    .replace(/(<link rel="stylesheet" href=")[^"]+/, `$1${basePath}styles.css?v=13`)
+    .replace(/(<script type="module" src=")[^"]+/, `$1${basePath}app.js?v=14`)
     .replace(/(<a class="brand" href=")[^"]+/, `$1${basePath}`)
     .replace(/(<a href="#library" data-nav="library">)/, `<a href="${libraryPath}" data-nav="library">`)
     .replace(/(<a href="#home" data-nav="home">)/, `<a href="${basePath}" data-nav="home">`)
     .replace(/(<a href="#story" data-nav="story">)/, `<a href="${basePath}story/" data-nav="story">`)
     .replace(/(<a href="#people" data-nav="people">)/, `<a href="${basePath}characters/" data-nav="people">`)
+    .replace(/(<a href="#places" data-nav="places">)/, `<a href="${basePath}places/" data-nav="places">`)
     .replace(/(<a href="#graph" data-nav="graph">)/, `<a href="${basePath}graph/" data-nav="graph">`)
     .replace(/<main id="main" tabindex="-1">[\s\S]*?<\/main>/, `<main id="main" tabindex="-1">${content}</main>`);
   const metadata = `${indexable ? "" : '<meta name="robots" content="noindex, follow">\n  '}<link rel="canonical" href="${escape(url)}">
@@ -85,9 +88,10 @@ export async function buildHomer(bookUrl, outDir, libraryUrl) {
   for (const chapter of chapters) await save(chapterPath(chapter), `${workName[chapter.work]}، ${chapter.work === "bridge" ? "زمینه" : "سرود"} ${chapter.number}: ${chapter.title}`, chapter.recap, chapterPage(chapter));
   await save("characters/", "شخصیت‌های ایلیاد و ادیسه", "نام‌ها و معرفی شخصیت‌های اصلی ایلیاد و ادیسه همراه با سرودهای مرتبط.", `<div class="page-shell"><div class="page-heading"><h1>شخصیت‌ها</h1><p>برای هر نام، معرفی کوتاه و سرودهای مرتبط را ببین.</p></div><div class="people-directory static-directory">${characters.map(person => `<a class="person-card" href="${basePath}characters/${person.id}/"><h2>${escape(person.name)} <bdi class="person-english" lang="en">(${escape(person.englishName)})</bdi></h2><p>${escape(person.bio)}</p></a>`).join("")}</div></div>`);
   for (const person of characters) await save(`characters/${person.id}/`, `${person.name} کیست؟`, person.bio, personPage(person));
+  await save("places/", "مکان‌های ایلیاد و ادیسه", "نقشهٔ شماتیک مکان‌های ایلیاد و ادیسه؛ یونان، پیرامون تروا و جغرافیای اسطوره‌ای سفر اودیسئوس.", renderPlaces(basePath, "troy", false));
   for (const place of places) {
     const appearances = chapters.filter(chapter => chapter.place === place.id);
-    await save(`places/${place.id}/`, `${place.name} در ایلیاد و ادیسه`, place.bio, `<div class="page-shell place-detail"><a class="back-link" href="${basePath}story/">→ داستان</a><div class="place-hero"><h1>${escape(place.name)}</h1><p>${escape(place.bio)}</p></div><section class="place-appearances"><h2>سرودهای مرتبط</h2>${list(appearances)}</section></div>`);
+    await save(`places/${place.id}/`, `${place.name} در ایلیاد و ادیسه`, place.bio, `<div class="page-shell place-detail"><a class="back-link" href="${basePath}places/">→ نقشهٔ مکان‌ها</a><div class="place-hero"><h1>${escape(place.name)}</h1><p>${escape(place.bio)}</p></div><section class="place-appearances"><h2>سرودهای مرتبط</h2>${list(appearances)}</section></div>`);
   }
   for (const term of extraGlossary.filter(item => !item.characterId && !item.placeId)) {
     const appearances = chapters.filter(chapter => `${chapter.title} ${chapter.recap} ${chapter.why} ${Object.values(readingGuides[chapter.id] || {}).join(" ")}`.includes(term.name));

@@ -2,6 +2,8 @@ import {chapters, characters, characterDetails, places, readingGuides, extraGlos
 
 import {overviewEdges, graphModes, renderAllGraph, renderCenteredGraph, renderProfileGraph, selectOverview, renderOverviewNodes} from "./graph.js?v=4";
 
+import {renderPlaces, renderPlacePanel} from "./places.js?v=1";
+
 const main = document.querySelector("#main");
 const searchDialog = document.querySelector("#search-dialog");
 const searchInput = document.querySelector("#search-input");
@@ -143,6 +145,7 @@ function route() {
     if (["iliad", "odyssey"].includes(parts[0])) return {section: "work", id: parts[0]};
     if (parts[0] === "story") return {section: "story"};
     if (parts[0] === "characters") return {section: "people"};
+    if (parts[0] === "places") return {section: "places", id: "troy"};
     if (parts[0] === "voyage") return {section: "voyage"};
     if (parts[0] === "graph") return {section: "graph", id: "achilles"};
     if (["compare", "trojan-war"].includes(parts[0])) return {section: "static"};
@@ -153,13 +156,14 @@ function route() {
   if (section === "person" && characterById.has(id)) return {section, id};
   if (section === "place" && placeById.has(id)) return {section, id};
   if (section === "term" && extraTermById.has(id)) return {section, id};
+  if (section === "places") return {section, id: placeById.has(id) ? id : "troy"};
   if (section === "graph") return {section, id: id === "all" || characterById.has(id) ? id : "achilles"};
   if (["home", "story", "people", "voyage"].includes(section)) return {section};
   return {section: "home"};
 }
 
 function updateNav(section) {
-  const target = ["chapter", "place", "term", "work"].includes(section) ? "story" : section === "person" ? "people" : section;
+  const target = ["chapter", "term", "work"].includes(section) ? "story" : section === "place" ? "places" : section === "person" ? "people" : section;
   document.querySelectorAll("[data-nav]").forEach(link => {
     link.classList.toggle("active", link.dataset.nav === target);
     if (link.dataset.nav === target) link.setAttribute("aria-current", "page");
@@ -177,6 +181,7 @@ function render() {
   if (current.section === "people") main.innerHTML = renderPeople();
   if (current.section === "person") main.innerHTML = renderPerson(characterById.get(current.id));
   if (current.section === "person" && characterDetails[current.id]) main.querySelector(".person-hero p")?.insertAdjacentHTML("afterend", `<p>${escapeHtml(characterDetails[current.id])}</p>`);
+  if (current.section === "places") main.innerHTML = renderPlaces(SITE_BASE, current.id);
   if (current.section === "place") main.innerHTML = renderPlace(placeById.get(current.id));
   if (current.section === "term") main.innerHTML = renderTerm(extraTermById.get(current.id));
   if (current.section === "graph") main.innerHTML = renderGraph(current.id);
@@ -205,9 +210,10 @@ function renderHome() {
         <a class="route-card" href="${SITE_BASE}odyssey/"><span class="route-number">۰۳ / خانه</span><span class="route-icon" aria-hidden="true">⛵</span><h3>ادیسه</h3><p>خانهٔ در انتظار، سفر پرخطر و بازگشتی که هنوز باید ثابت شود.</p><span class="route-meta">۲۴ سرود <span aria-hidden="true">←</span></span></a>
       </div>
     </section>
-    <section class="explore-section section-wrap"><div class="section-intro"><span class="eyebrow">بخش‌های دیگر</span><h2>شخصیت‌ها و ترتیب رویدادها</h2></div><div class="explore-grid">
+    <section class="explore-section section-wrap"><div class="section-intro"><span class="eyebrow">بخش‌های دیگر</span><h2>شخصیت‌ها، مکان‌ها و مسیر داستان</h2></div><div class="explore-grid">
       <a href="${SITE_BASE}characters/" class="explore-card"><span class="explore-symbol">✳</span><h3>شخصیت‌ها</h3><p>معرفی کوتاه، نام‌های دیگر و بخش‌های مرتبط با هر شخصیت.</p><span>دیدن شخصیت‌ها ←</span></a>
       <a href="${SITE_BASE}graph/" class="explore-card"><span class="explore-symbol">⌘</span><h3>پیوندهای شخصیت‌ها</h3><p>شخصیت‌هایی که نامشان در بخش‌های مشترک آمده است.</p><span>دیدن گراف ←</span></a>
+      <a href="${SITE_BASE}places/" class="explore-card"><span class="explore-symbol">⌖</span><h3>مکان‌های داستان</h3><p>نقشهٔ شماتیک یونان و تروا و مکان‌های اسطوره‌ای سفر.</p><span>دیدن نقشهٔ مکان‌ها ←</span></a>
       <a href="${SITE_BASE}voyage/" class="explore-card"><span class="explore-symbol">◌</span><h3>ترتیب سفر اودیسئوس</h3><p>ترتیب رخدادهای سفر در کنار ترتیب روایت آن‌ها در ادیسه.</p><span>دیدن مسیر سفر ←</span></a>
     </div></section>
     <section class="question-section section-wrap"><div><span class="eyebrow">یک سؤال رایج</span><h2>اسب تروا در ایلیاد است؟</h2><p>نه. ایلیاد با خاک‌سپاری هکتور تمام می‌شود؛ ادیسه در سرود ۸ از اسب چوبی یاد می‌کند.</p><a class="text-link" href="${chapterHref(chapterById.get("bridge-02"))}">دیدن بخش اسب چوبی ←</a><p><a class="text-link" href="${SITE_BASE}trojan-war/">پیش از ایلیاد چه شد؟ ←</a> · <a class="text-link" href="${SITE_BASE}compare/">تفاوت ایلیاد و ادیسه ←</a></p></div><div class="quote-mark" aria-hidden="true">؟</div></section>
@@ -269,7 +275,7 @@ function renderPerson(person) {
 
 function renderPlace(place) {
   const appearances = chapters.filter(c => c.place === place.id);
-  return `<div class="page-shell place-detail"><a class="back-link" href="${SITE_BASE}story/">→ فهرست داستان</a><div class="place-hero"><span class="eyebrow">جای داستان</span><h1>${escapeHtml(place.name)}</h1><p>${escapeHtml(place.bio)}</p></div><section class="place-appearances"><h2>در کدام بخش‌ها می‌بینیم؟</h2><div class="chapter-list compact">${appearances.map(chapterRow).join("")}</div></section></div>`;
+  return `<div class="page-shell place-detail"><a class="back-link" href="${SITE_BASE}places/">→ نقشهٔ مکان‌ها</a><div class="place-hero"><span class="eyebrow">جای داستان</span><h1>${escapeHtml(place.name)}</h1><p>${escapeHtml(place.bio)}</p></div><section class="place-appearances"><h2>در کدام بخش‌ها می‌بینیم؟</h2><div class="chapter-list compact">${appearances.map(chapterRow).join("")}</div></section></div>`;
 }
 
 function renderTerm(term) {
@@ -323,6 +329,15 @@ function renderSearch() {
 }
 
 document.addEventListener("click", event => {
+  const closePlace = event.target.closest("[data-place-close]");
+  if (closePlace) main.querySelector("#place-mobile-dialog")?.close();
+  const openPlace = event.target.closest("[data-place-open]");
+  if (openPlace) selectPlace(main.querySelector("#places-select").value);
+  const placeMarker = event.target.closest("[data-place-select]");
+  if (placeMarker && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+    event.preventDefault();
+    selectPlace(placeMarker.dataset.placeSelect);
+  }
   const trigger = event.target.closest("#search-open");
   if (trigger) { searchDialog.showModal(); searchInput.focus(); renderSearch(); }
   const mark = event.target.closest("[data-mark-read]");
@@ -377,6 +392,7 @@ document.addEventListener("click", event => {
 });
 
 document.addEventListener("change", event => {
+  if (event.target.id === "places-select") selectPlace(event.target.value);
   if (event.target.id === "graph-person") location.hash = `#graph/${event.target.value}`;
 });
 
@@ -433,4 +449,22 @@ function updateOverviewFilters(overview) {
     button.setAttribute("aria-pressed", String(!graphFilters.hiddenGroups.has(button.dataset.graphGroup)));
     button.querySelector("[data-group-count]").textContent = faNum(count);
   }
+}
+
+function selectPlace(id) {
+  if (!placeById.has(id)) return;
+  const panel = main.querySelector("[data-place-detail]");
+  if (!panel) return;
+  panel.innerHTML = renderPlacePanel(id, SITE_BASE);
+  if (matchMedia("(max-width:1000px)").matches) {
+    const dialog = main.querySelector("#place-mobile-dialog");
+    dialog.querySelector("[data-place-modal-detail]").innerHTML = panel.innerHTML;
+    if (!dialog.open) dialog.showModal();
+  }
+  main.querySelector("#places-select").value = id;
+  main.querySelectorAll("[data-place-select]").forEach(marker => {
+    if (marker.dataset.placeSelect === id) marker.setAttribute("aria-current", "true");
+    else marker.removeAttribute("aria-current");
+  });
+  history.replaceState(null, "", `#places/${id}`);
 }
