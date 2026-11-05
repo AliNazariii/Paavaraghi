@@ -3,6 +3,8 @@ import {chapters, characters} from "./story.js?v=7";
 import {additionalCharacters, overviewCharacters, overviewEdges} from "./graph-characters.js?v=1";
 export {additionalCharacters, overviewCharacters, overviewEdges};
 
+import {familyForPerson} from "./families.js?v=1";
+
 const escape = value => String(value).replace(/[&<>"']/g, char => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"})[char]);
 const faNum = value => Number(value).toLocaleString("fa-IR");
 export const graphGroups = [...new Set(overviewCharacters.map(person => person.group))].map((name, index) => ({name, color: ["#9a6335", "#a44f51", "#347c71", "#5e68a2", "#407f9f", "#846795", "#747245", "#7a6a57"][index]}));
@@ -65,7 +67,8 @@ export const graphNodes = layoutGraph();
 export const overviewNodes = layoutGraph(overviewCharacters, overviewEdges, 1900, 1420);
 
 export function graphModes(basePath, all = false) {
-  return `<nav class="graph-modes" aria-label="حالت نمایش گراف"><a href="${basePath}graph/#graph/achilles" ${!all ? 'aria-current="page"' : ""}>شخصیت مرکزی</a><a href="${basePath}graph/#graph/all" ${all ? 'aria-current="page"' : ""}>همهٔ شخصیت‌ها</a></nav>`;
+  const active = all === true ? "all" : all === "family" ? "family" : "center";
+  return `<nav class="graph-modes" aria-label="حالت نمایش گراف"><a href="${basePath}graph/#graph/achilles" ${active === "center" ? 'aria-current="page"' : ""}>شخصیت مرکزی</a><a href="${basePath}graph/#graph/all" ${active === "all" ? 'aria-current="page"' : ""}>همهٔ شخصیت‌ها</a><a href="${basePath}graph/family/" ${active === "family" ? 'aria-current="page"' : ""}>روابط خانوادگی</a></nav>`;
 }
 
 export function selectOverview(includeAdditional = false, hiddenGroups = []) {
@@ -120,5 +123,5 @@ export function renderCenteredGraph(id, basePath, profileLinks = false) {
 
 export function renderProfileGraph(id, basePath) {
   const person = characters.find(person => person.id === id);
-  return `<section class="person-graph" aria-labelledby="person-graph-heading"><div class="person-graph-heading"><h2 id="person-graph-heading">پیوندهای ${escape(person.name)}</h2><a class="text-link" href="${basePath}graph/#graph/${id}">باز کردن گراف ←</a></div><p>این نام‌ها بیشترین حضور مشترک را با ${escape(person.name)} در بخش‌های راهنما دارند؛ خط‌ها به‌تنهایی نشانهٔ دوستی یا خویشاوندی نیستند. برای شناخت هر شخصیت روی نامش بزن.</p>${renderCenteredGraph(id, basePath, true)}<a class="text-link person-graph-all" href="${basePath}graph/#graph/all">دیدن همهٔ شخصیت‌ها در یک گراف ←</a></section>`;
+  return `<section class="person-graph" aria-labelledby="person-graph-heading"><div class="person-graph-heading"><h2 id="person-graph-heading">پیوندهای ${escape(person.name)}</h2><a class="text-link" href="${basePath}graph/#graph/${id}">باز کردن گراف ←</a></div><p>این نام‌ها بیشترین حضور مشترک را با ${escape(person.name)} در بخش‌های راهنما دارند؛ خط‌ها به‌تنهایی نشانهٔ دوستی یا خویشاوندی نیستند. برای شناخت هر شخصیت روی نامش بزن.</p>${renderCenteredGraph(id, basePath, true)}<div class="person-graph-links"><a class="text-link person-graph-all" href="${basePath}graph/#graph/all">دیدن همهٔ شخصیت‌ها در یک گراف ←</a>${familyForPerson(id).length ? `<a class="text-link" href="${basePath}graph/family/#graph/family/${id}">روابط خانوادگی ${escape(person.name)} ←</a>` : ""}</div></section>`;
 }

@@ -68,3 +68,33 @@ for (const expanded of [false, true]) for (let mask = 0; mask < 2 ** graphGroups
 assert.equal(selectOverview(true, graphGroups.map(group => group.name)).nodes.length, 0);
 assert.equal(selectOverview(false).nodes.length, characters.length);
 console.log(`Validated ${additionalCharacters.length} additional names, ${overviewEdges.length} expanded links, evidence, unique labels and every group-filter combination.`);
+
+const {families, familyForPerson} = await import('../docs/homer/families.js');
+const parentEdges = [];
+for (const family of families) {
+  const ids = new Set(family.nodes.map(node => node.id));
+  assert.equal(ids.size, family.nodes.length);
+  for (const node of family.nodes) {
+    assert(peopleById.has(node.id), `Unknown family member: ${node.id}`);
+    assert(node.x >= 59 && node.x <= family.width - 59 && node.y >= 29 && node.y <= family.height - 29);
+  }
+  for (const edge of family.relations) {
+    assert(ids.has(edge.from) && ids.has(edge.to) && edge.from !== edge.to);
+    assert(['father', 'mother', 'spouse'].includes(edge.type));
+    assert(chapters.some(chapter => chapter.work === edge.work && chapter.number === edge.book));
+    assert(edge.lines);
+    if (edge.type !== 'spouse') {
+      parentEdges.push(edge);
+      assert(family.nodes.find(node => node.id === edge.from).y < family.nodes.find(node => node.id === edge.to).y, 'Parent must be above child');
+    }
+  }
+}
+function visitAncestors(id, path = new Set()) {
+  assert(!path.has(id), `Parentage cycle: ${id}`);
+  const next = new Set([...path, id]);
+  for (const edge of parentEdges.filter(edge => edge.to === id)) visitAncestors(edge.from, next);
+}
+for (const id of peopleById.keys()) visitAncestors(id);
+assert(familyForPerson('athena').length > 0);
+assert(!families.flatMap(family => family.relations).some(edge => edge.from === 'hera' && edge.to === 'sarpedon'), 'Do not imply Hera is Sarpedon’s mother');
+console.log(`Validated ${families.length} sourced family trees, references, endpoints and acyclic parentage.`);

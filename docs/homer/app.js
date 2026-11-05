@@ -1,8 +1,10 @@
 import {chapters, characters, characterDetails, places, readingGuides, extraGlossary, sourceLink} from "./story.js?v=7";
 
-import {overviewEdges, graphModes, renderAllGraph, renderCenteredGraph, renderProfileGraph, selectOverview, renderOverviewNodes} from "./graph.js?v=4";
+import {overviewEdges, graphModes, renderAllGraph, renderCenteredGraph, renderProfileGraph, selectOverview, renderOverviewNodes} from "./graph.js?v=5";
 
 import {renderPlaces, renderPlacePanel} from "./places.js?v=1";
+
+import {renderFamilyGraph} from "./families.js?v=1";
 
 const main = document.querySelector("#main");
 const searchDialog = document.querySelector("#search-dialog");
@@ -147,17 +149,18 @@ function route() {
     if (parts[0] === "characters") return {section: "people"};
     if (parts[0] === "places") return {section: "places", id: "troy"};
     if (parts[0] === "voyage") return {section: "voyage"};
+    if (parts[0] === "graph" && parts[1] === "family") return {section: "graph", id: "family"};
     if (parts[0] === "graph") return {section: "graph", id: "achilles"};
     if (["compare", "trojan-war"].includes(parts[0])) return {section: "static"};
   }
   const raw = decodeURIComponent(location.hash.slice(1) || "home");
-  const [section, id] = raw.split("/");
+  const [section, id, focusId] = raw.split("/");
   if (section === "chapter" && chapterById.has(id)) return {section, id};
   if (section === "person" && characterById.has(id)) return {section, id};
   if (section === "place" && placeById.has(id)) return {section, id};
   if (section === "term" && extraTermById.has(id)) return {section, id};
   if (section === "places") return {section, id: placeById.has(id) ? id : "troy"};
-  if (section === "graph") return {section, id: id === "all" || characterById.has(id) ? id : "achilles"};
+  if (section === "graph") return {section, id: ["all", "family"].includes(id) || characterById.has(id) ? id : "achilles", focusId};
   if (["home", "story", "people", "voyage"].includes(section)) return {section};
   return {section: "home"};
 }
@@ -184,10 +187,16 @@ function render() {
   if (current.section === "places") main.innerHTML = renderPlaces(SITE_BASE, current.id);
   if (current.section === "place") main.innerHTML = renderPlace(placeById.get(current.id));
   if (current.section === "term") main.innerHTML = renderTerm(extraTermById.get(current.id));
-  if (current.section === "graph") main.innerHTML = renderGraph(current.id);
+  if (current.section === "graph") main.innerHTML = renderGraph(current.id, current.focusId);
   if (current.section === "voyage") main.innerHTML = renderVoyage();
   document.title = `${current.section === "home" ? "از خشم آشیل تا بازگشت اودیسئوس" : main.querySelector("h1")?.textContent || "راهِ هومر"} | راهِ هومر`;
   window.scrollTo({top: 0, behavior: "instant"});
+  const familyFocus = main.querySelector(".family-node[aria-current]");
+  if (familyFocus) requestAnimationFrame(() => {
+    const viewport = familyFocus.closest(".family-viewport");
+    const box = familyFocus.getBoundingClientRect(), frame = viewport.getBoundingClientRect();
+    viewport.scrollLeft += box.left - frame.left + box.width / 2 - viewport.clientWidth / 2;
+  });
 }
 
 function renderHome() {
@@ -284,7 +293,8 @@ function renderTerm(term) {
   return `<div class="page-shell place-detail"><a class="back-link" href="${SITE_BASE}story/">→ فهرست داستان</a><div class="place-hero"><span class="eyebrow">نام و مفهوم</span><h1>${escapeHtml(term.name)}</h1><p>${escapeHtml(term.description)}</p></div>${appearances.length ? `<section class="place-appearances"><h2>در کدام بخش‌ها نامش آمده؟</h2><div class="chapter-list compact">${appearances.map(chapterRow).join("")}</div></section>` : ""}</div>`;
 }
 
-function renderGraph(id) {
+function renderGraph(id, focusId) {
+  if (id === "family") return `<div class="page-shell"><div class="page-heading"><span class="eyebrow">خانواده‌های داستان</span><h1>روابط خانوادگی شخصیت‌ها</h1><p>چه کسی پدر، مادر یا همسرِ چه کسی است؟ نسبت‌ها با برچسب روشن و ارجاع به متن هومر آمده‌اند.</p></div>${graphModes(SITE_BASE, "family")}${renderFamilyGraph(SITE_BASE, focusId)}</div>`;
   const heading = `<div class="page-heading"><span class="eyebrow">گراف داستان</span><h1>پیوندهای شخصیت‌ها</h1><p>خط‌ها نشان می‌دهند نام دو شخصیت در چند بخشِ راهنما کنار هم آمده است؛ به‌تنهایی نشانهٔ دوستی یا خویشاوندی نیستند.</p></div>`;
   if (id === "all") return `<div class="page-shell">${heading}${graphModes(SITE_BASE, true)}${renderAllGraph(SITE_BASE, true, graphFilters)}</div>`;
   const center = characterById.get(id);
@@ -393,6 +403,7 @@ document.addEventListener("click", event => {
 
 document.addEventListener("change", event => {
   if (event.target.id === "places-select") selectPlace(event.target.value);
+  if (event.target.id === "family-select") location.hash = event.target.value === "all" ? "#graph/family" : `#graph/family/${event.target.value}`;
   if (event.target.id === "graph-person") location.hash = `#graph/${event.target.value}`;
 });
 
