@@ -31,7 +31,7 @@ function setup(t, options = {}) {
     }
   };
   const mailer = async message => { if (options.mailError) throw new Error("Mail unavailable"); messages.push(message); };
-  const app = createApp({root, catalog, store, appUrl: origin, gateway, mailer, sandbox: true});
+  const app = createApp({root, catalog, store, appUrl: origin, gateway: options.disabled ? null : gateway, mailer: options.disabled ? null : mailer, sandbox: true});
   function client(ip) {
     const cookies = new Map();
     return async (path, fields, headers = {}) => {
@@ -82,6 +82,18 @@ test("public previews and all free Homer routes work without a login; full paid 
   assert.equal((await guest("/private/franny-and-zooey/zooey/index.html")).status, 404);
   assert.equal((await guest("/.env")).status, 404);
   assert.equal((await guest("/account/library")).status, 303);
+});
+
+test("unconfigured checkout explains its availability before asking for login", async t => {
+  const s = setup(t, {disabled: true}), guest = s.client("guest");
+  for (const fields of [undefined, {}]) {
+    const response = await guest("/checkout/franny-and-zooey", fields);
+    assert.equal(response.status, 503);
+    assert.ok((await response.text()).includes("خرید موقتاً در دسترس نیست"));
+  }
+  assert.equal(s.requests.length, 0);
+  assert.equal(s.messages.length, 0);
+  assert.equal((await guest("/pricing/")).status, 200);
 });
 
 test("login, server-priced checkout, verified payment, receipt, access, logout and recovery", async t => {

@@ -106,6 +106,7 @@ export function createApp({root, catalog, store, appUrl, gateway, mailer, sandbo
     if (path.startsWith("/checkout/")) {
       const product = products.find(product => product.id === path.slice("/checkout/".length));
       if (!product) return html("محصول پیدا نشد", "<h1>این محصول پیدا نشد</h1>", 404);
+      if (!gateway || !mailer) return unavailable();
       if (!user) return login(path);
       const owned = store.owned(user.id);
       if (product.bookIds.every(id => owned.has(id))) return redirect("/account/library");
