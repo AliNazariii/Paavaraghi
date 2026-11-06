@@ -14,6 +14,7 @@ export const books = [
     path: "homer/",
     title: "ایلیاد و ادیسه",
     author: "هومر",
+    freeShowcase: true,
     description: "دو منظومهٔ یونانی، سرود به سرود: از خشم آشیل در سال دهم جنگ تروا تا بازگشت اودیسئوس به ایتاکا.",
     meta: `${faNum(count("iliad") + count("odyssey"))} سرود · ${faNum(count("bridge"))} بخش زمینه`,
     mark: "✦",

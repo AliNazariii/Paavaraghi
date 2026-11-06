@@ -17,6 +17,15 @@ main{flex:1}
 .intro{padding:64px 0 46px;max-width:780px}
 .intro h1{font-weight:800;letter-spacing:-1px;font-size:clamp(30px,5vw,48px);line-height:1.5;margin-bottom:18px}
 .intro p{color:var(--ink-soft);font-size:16px}
+.free-showcase{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:32px;padding:32px;margin-bottom:46px;border:1px solid #41616a;border-radius:6px;background:#102b35;color:#fff}
+.showcase-kicker{display:block;color:#e6c184;font-size:12px;font-weight:700;margin-bottom:10px}
+.showcase-copy h2{font-size:clamp(23px,4vw,32px);line-height:1.6;margin-bottom:12px}
+.showcase-copy p{max-width:650px;color:#d4e0dd;font-size:14px;margin-bottom:22px}
+.showcase-cta{display:inline-flex;align-items:center;min-height:44px;padding:9px 18px;border:1px solid #e6c184;border-radius:4px;background:#e6c184;color:#102b35;text-decoration:none;font-size:13px;font-weight:700}
+.showcase-cta:hover{background:#f1d6ab}
+.showcase-details{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:8px;border-inline-start:1px solid #41616a;padding-inline-start:26px;font-size:13px}
+.showcase-details p{margin:0;color:#fff}.showcase-details span{color:#d4e0dd;font-size:12px}.showcase-details a{display:inline-flex;align-items:center;min-height:44px;color:#e6c184;font-size:12px;text-underline-offset:5px}
+.free-showcase a:focus-visible{outline-color:#fff}
 .shelf h2{font-size:13px;letter-spacing:.3px;color:var(--accent);font-weight:700;margin-bottom:20px}
 .book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),1fr));gap:24px}
 .book-card{position:relative;display:grid;grid-template-columns:150px minmax(0,1fr);gap:24px;padding:22px;background:var(--card);border:1px solid var(--line);border-radius:6px;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s}
@@ -28,6 +37,8 @@ main{flex:1}
 .book-cover-author{color:var(--book-accent);font-size:12px}
 .book-body{display:flex;flex-direction:column;min-width:0}
 .book-author{color:var(--ink-soft);font-size:12px}
+.book-byline{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.book-access{display:inline-block;padding:2px 8px;border:1px solid var(--line);border-radius:20px;color:var(--accent);font-size:10px;font-weight:700}
 .book-body h3{font-weight:800;font-size:24px;margin:2px 0 8px}
 .book-link{text-decoration:none}
 .book-link::after{content:"";position:absolute;inset:0;border-radius:6px}
@@ -40,4 +51,5 @@ main{flex:1}
 .shelf-note{margin-top:26px;font-size:13px;color:var(--ink-soft)}
 .footer{padding:40px 0 30px;margin-top:60px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-soft)}
 @media(max-width:560px){.book-card{grid-template-columns:1fr}.book-cover{min-height:150px}.intro{padding:42px 0 32px}}
+@media(max-width:760px){.free-showcase{grid-template-columns:1fr;gap:20px;padding:24px}.showcase-details{border-inline-start:0;border-top:1px solid #41616a;padding-inline-start:0;padding-top:20px}}
 @media(prefers-reduced-motion:reduce){.book-card{transition:none}}

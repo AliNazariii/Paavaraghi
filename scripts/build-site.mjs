@@ -1,13 +1,16 @@
 import {writeFile} from "node:fs/promises";
 import {SITE_URL, docsRoot} from "./site-config.mjs";
 import {buildLibrary} from "./library/build.mjs";
+import {buildPricing} from "./library/pricing.mjs";
+import {products} from "../server/catalog.mjs";
 import {buildHomer} from "./homer/build.mjs";
 import {buildFrannyAndZooey} from "./franny-and-zooey/build.mjs";
 import {buildAhlEGharq} from "./ahl-e-gharq/build.mjs";
 import {buildNimeyeTarikEMah} from "./nimeye-tarik-e-mah/build.mjs";
 
 const sitemap = [
-  ...await buildLibrary(SITE_URL, docsRoot),
+  ...await buildLibrary(SITE_URL, docsRoot, {products}),
+  ...await buildPricing(SITE_URL, docsRoot),
   ...await buildHomer(new URL("homer/", SITE_URL).href, `${docsRoot}homer/`, SITE_URL),
   ...await buildFrannyAndZooey(new URL("franny-and-zooey/", SITE_URL).href, `${docsRoot}franny-and-zooey/`, SITE_URL),
   ...await buildAhlEGharq(new URL("ahl-e-gharq/", SITE_URL).href, `${docsRoot}ahl-e-gharq/`, SITE_URL),

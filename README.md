@@ -6,6 +6,10 @@ Paavaraghi (Persian for "footnote") is a collection of Persian reading guides fo
 
 The home page is a shelf of book cards. Pick a book to open its guide. Every guide has its own design, chosen to fit the book.
 
+The Homer guide is the complete free showcase, highlighted on the home page with direct access to both poems. The `freeShowcase` flag in `scripts/library/books.mjs` selects that featured guide. Paid checkout and access control are not enabled yet; all existing guides remain accessible.
+
+Public prices are listed at `/pricing/` and `/products/<product>/`, with samples and an explicit prelaunch payment notice. Prices live in `server/catalog.mjs`: 199,000 toman for each of the other three guides, or 449,000 toman for their bundle. These products are original reading guides, not copies of the novels. `scripts/library/pricing.mjs` generates the product and pricing pages; `server/store.css` is copied to `docs/store.css` during the build.
+
 ## On the shelf
 
 | Book | Guide |
