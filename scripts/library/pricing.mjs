@@ -9,11 +9,15 @@ const purchase = (product, enabled) => enabled ? `<a class="store-button" href="
 
 export async function buildPricing(siteUrl, outDir, {salesEnabled = false} = {}) {
   const urls = [];
+  const basePath = new URL(siteUrl).pathname;
   await cp(new URL("../../server/store.css", import.meta.url), join(outDir, "store.css"));
   async function save(path, title, description, content) {
     const canonical = new URL(path, siteUrl).href;
     await mkdir(join(outDir, path), {recursive: true});
-    await writeFile(join(outDir, path, "index.html"), page(title, content, {description, canonical, noindex: false, accountLink: salesEnabled}));
+    const html = page(title, content, {description, canonical, noindex: false, accountLink: salesEnabled})
+      .replace(/href="\/(?!\/)/g, `href="${basePath}`)
+      .replace(new URL("/homer/share-cover.png", siteUrl).href, new URL("homer/share-cover.png", siteUrl).href);
+    await writeFile(join(outDir, path, "index.html"), html);
     urls.push(canonical);
   }
   const productCards = products.map(product => `<li><h2><a href="/products/${product.id}/">${escape(titleOf(product))}</a></h2><p class="store-total">${money(product.priceToman)}</p><p>${product.bookIds.length === 1 ? "خرید یک‌بارهٔ راهنمای کامل این اثر" : "خرید یک‌بارهٔ هر سه راهنما با هم"}</p><a href="/products/${product.id}/">محتوای محصول و ${product.samplePath ? "نمونهٔ رایگان" : "جزئیات مجموعه"} ←</a></li>`).join("");

@@ -1,0 +1,30 @@
+name: paavaraghi
+services:
+  web:
+    build: .
+    image: paavaraghi:store
+    restart: unless-stopped
+    env_file: ${PAAVARAGHI_ENV_FILE:-.env}
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - paavaraghi-data:/data
+    networks:
+      edge:
+        aliases:
+          - paavaraghi-web
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  paavaraghi-data:
+networks:
+  edge:
+    external: true
+

@@ -3,9 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "engines": {"node": ">=24"},
   "scripts": {
     "build": "node scripts/build-site.mjs",
     "check": "node --check docs/homer/app.js && node --check docs/homer/story.js && node --check docs/franny-and-zooey/app.js && node --check docs/ahl-e-gharq/app.js && node --check docs/nimeye-tarik-e-mah/app.js && node scripts/validate-graph.mjs && node scripts/validate-content.mjs && node scripts/validate-reading-context.mjs && node scripts/validate-ahl-e-gharq.mjs && node scripts/validate-nimeye-tarik-e-mah.mjs && node scripts/validate-site.mjs",
-    "start": "node scripts/dev-server.mjs"
+    "start": "node scripts/dev-server.mjs",
+    "build:store": "npm run build && node scripts/build-store.mjs",
+    "serve:store": "node --env-file-if-exists=.env server/index.mjs",
+    "doctor:store": "node --env-file-if-exists=.env server/doctor.mjs",
+    "test:store": "npm run build:store && node --test test/store.test.mjs"
+  },
+  "dependencies": {
+    "nodemailer": "10.3.1"
   }
 }

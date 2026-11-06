@@ -21,6 +21,8 @@ Public prices are listed at `/pricing/` and `/products/<product>/`, with samples
 
 More books will be added over time.
 
+The Docker storefront adds verified Zarinpal checkout, email-code login, a personal library and protected serving of paid guides. See [DEPLOYMENT.md](DEPLOYMENT.md) for configuration and deployment. Run `npm run test:store` for its payment and access tests. The static GitHub Pages edition remains the public prelaunch edition until the server and live merchant are configured.
+
 ### Homer: *Iliad* and *Odyssey*
 
 The guide covers all 24 books of each poem, in order. For each book you get:
