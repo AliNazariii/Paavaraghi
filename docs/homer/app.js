@@ -6,6 +6,9 @@ import {renderPlaces, renderPlacePanel} from "./places.js?v=1";
 
 import {renderFamilyGraph} from "./families.js?v=1";
 
+import {readingTerms, readingNames, readingNameById, normalizeName} from "./names.js?v=1";
+import {backgrounds, namesForChapter, renderReadingGuide, renderChapterBackgrounds, renderChapterNames, renderBackgroundIndex, renderBackground, renderRelatedBackgrounds, renderNameAliases} from "./reading-context.js?v=1";
+
 const main = document.querySelector("#main");
 const searchDialog = document.querySelector("#search-dialog");
 const searchInput = document.querySelector("#search-input");
@@ -13,7 +16,7 @@ const searchResults = document.querySelector("#search-results");
 const chapterById = new Map(chapters.map(item => [item.id, item]));
 const characterById = new Map(characters.map(item => [item.id, item]));
 const placeById = new Map(places.map(item => [item.id, item]));
-const extraTermById = new Map(extraGlossary.map(item => [item.id, item]));
+const extraTermById = new Map([...extraGlossary, ...readingTerms].map(item => [item.id, item]));
 const WORK_NAMES = {iliad: "ایلیاد", bridge: "میان دو داستان", odyssey: "ادیسه"};
 const SITE_BASE = new URL("./", import.meta.url).pathname;
 const STORAGE_KEY = "homer-path-read-v1";
@@ -27,7 +30,7 @@ try {
 
 const faNum = n => Number(n).toLocaleString("fa-IR");
 const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"})[char]);
-const normalize = value => String(value).toLowerCase().replace(/[يى]/g, "ی").replace(/ك/g, "ک").replace(/[\u064b-\u065f\u0670]/g, "").replace(/\u200c/g, " ").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+const normalize = normalizeName;
 const chapterLabel = c => c.work === "bridge" ? `زمینهٔ ${faNum(c.number)}` : `سرود ${faNum(c.number)}`;
 const chapterHref = c => `${SITE_BASE}${c.work === "bridge" ? `context/${c.number}` : `${c.work}/book-${c.number}`}/`;
 const characterHref = c => `${SITE_BASE}characters/${c.id}/`;
@@ -35,9 +38,8 @@ const placeHref = place => `${SITE_BASE}places/${place.id}/`;
 const termHref = term => `${SITE_BASE}terms/${term.id}/`;
 const smallBadge = (text, cls = "") => `<span class="badge ${cls}">${escapeHtml(text)}</span>`;
 const glossaryEntries = [
-  ...characters.flatMap(person => [person.name, ...person.aliases].map(name => ({name, description: person.bio, href: characterHref(person)}))),
-  ...places.map(place => ({name: place.name, description: place.bio, href: placeHref(place)})),
-  ...extraGlossary.map(term => ({...term, href: term.characterId ? characterHref(characterById.get(term.characterId)) : term.placeId ? placeHref(placeById.get(term.placeId)) : termHref(term)}))
+  ...readingNames.flatMap(person => [person.name, person.englishName, ...person.aliases].filter(name => name && !["خواب", "زانتوس"].includes(name)).map(name => ({name, description: person.description, href: `${SITE_BASE}${person.path}`}))),
+  ...places.map(place => ({name: place.name, description: place.bio, href: placeHref(place)}))
 ].sort((a, b) => b.name.length - a.name.length);
 const glossaryByName = new Map(glossaryEntries.map(entry => [entry.name, entry]));
 const regexEscape = value => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -145,6 +147,7 @@ function route() {
     if (parts.length === 2 && parts[0] === "places" && placeById.has(parts[1])) return {section: "place", id: parts[1]};
     if (parts.length === 2 && parts[0] === "terms" && extraTermById.has(parts[1])) return {section: "term", id: parts[1]};
     if (["iliad", "odyssey"].includes(parts[0])) return {section: "work", id: parts[0]};
+    if (parts[0] === "background") return parts[1] && backgrounds.some(story => story.id === parts[1]) ? {section: "background", id: parts[1]} : {section: "backgrounds"};
     if (parts[0] === "story") return {section: "story"};
     if (parts[0] === "characters") return {section: "people"};
     if (parts[0] === "places") return {section: "places", id: "troy"};
@@ -155,6 +158,8 @@ function route() {
   }
   const raw = decodeURIComponent(location.hash.slice(1) || "home");
   const [section, id, focusId] = raw.split("/");
+  if (section === "background" && backgrounds.some(story => story.id === id)) return {section, id};
+  if (section === "backgrounds") return {section};
   if (section === "chapter" && chapterById.has(id)) return {section, id};
   if (section === "person" && characterById.has(id)) return {section, id};
   if (section === "place" && placeById.has(id)) return {section, id};
@@ -166,7 +171,7 @@ function route() {
 }
 
 function updateNav(section) {
-  const target = ["chapter", "term", "work"].includes(section) ? "story" : section === "place" ? "places" : section === "person" ? "people" : section;
+  const target = ["chapter", "term", "work", "background", "backgrounds"].includes(section) ? "story" : section === "place" ? "places" : section === "person" ? "people" : section;
   document.querySelectorAll("[data-nav]").forEach(link => {
     link.classList.toggle("active", link.dataset.nav === target);
     if (link.dataset.nav === target) link.setAttribute("aria-current", "page");
@@ -181,6 +186,8 @@ function render() {
   if (current.section === "story") main.innerHTML = renderStoryIndex();
   if (current.section === "work") main.innerHTML = renderWorkIndex(current.id);
   if (current.section === "chapter") main.innerHTML = renderChapter(chapterById.get(current.id));
+  if (current.section === "backgrounds") main.innerHTML = renderBackgroundIndex(SITE_BASE);
+  if (current.section === "background") main.innerHTML = renderBackground(current.id, SITE_BASE, new URLSearchParams(location.search).get("from"));
   if (current.section === "people") main.innerHTML = renderPeople();
   if (current.section === "person") main.innerHTML = renderPerson(characterById.get(current.id));
   if (current.section === "person" && characterDetails[current.id]) main.querySelector(".person-hero p")?.insertAdjacentHTML("afterend", `<p>${escapeHtml(characterDetails[current.id])}</p>`);
@@ -219,7 +226,7 @@ function renderHome() {
         <a class="route-card" href="${SITE_BASE}odyssey/"><span class="route-number">۰۳ / خانه</span><span class="route-icon" aria-hidden="true">⛵</span><h3>ادیسه</h3><p>خانهٔ در انتظار، سفر پرخطر و بازگشتی که هنوز باید ثابت شود.</p><span class="route-meta">۲۴ سرود <span aria-hidden="true">←</span></span></a>
       </div>
     </section>
-    <section class="explore-section section-wrap"><div class="section-intro"><span class="eyebrow">بخش‌های دیگر</span><h2>شخصیت‌ها، مکان‌ها و مسیر داستان</h2></div><div class="explore-grid">
+    <section class="explore-section section-wrap"><div class="section-intro"><span class="eyebrow">بخش‌های دیگر</span><h2>شخصیت‌ها، مکان‌ها و مسیر داستان</h2><p><a class="text-link" href="${SITE_BASE}background/">پیش‌داستان‌ها و راهنمای اشاره‌ها ←</a></p></div><div class="explore-grid">
       <a href="${SITE_BASE}characters/" class="explore-card"><span class="explore-symbol">✳</span><h3>شخصیت‌ها</h3><p>معرفی کوتاه، نام‌های دیگر و بخش‌های مرتبط با هر شخصیت.</p><span>دیدن شخصیت‌ها ←</span></a>
       <a href="${SITE_BASE}graph/" class="explore-card"><span class="explore-symbol">⌘</span><h3>پیوندهای شخصیت‌ها</h3><p>شخصیت‌هایی که نامشان در بخش‌های مشترک آمده است.</p><span>دیدن گراف ←</span></a>
       <a href="${SITE_BASE}places/" class="explore-card"><span class="explore-symbol">⌖</span><h3>مکان‌های داستان</h3><p>نقشهٔ شماتیک یونان و تروا و مکان‌های اسطوره‌ای سفر.</p><span>دیدن نقشهٔ مکان‌ها ←</span></a>
@@ -230,7 +237,7 @@ function renderHome() {
 }
 
 function renderStoryIndex() {
-  return `<div class="page-shell"><div class="page-heading"><span class="eyebrow">مسیر خواندن</span><h1>فهرست داستان</h1><p>پس از سرودهای ایلیاد، سه بخشِ زمینه و سپس سرودهای ادیسه آمده‌اند. بخش‌های زمینه سرودهای هومر نیستند؛ جای اشاره‌های ادیسه و روایت‌های دیگر در هر بخش مشخص شده است.</p></div>
+  return `<div class="page-shell"><div class="page-heading"><span class="eyebrow">مسیر خواندن</span><h1>فهرست داستان</h1><p>پس از سرودهای ایلیاد، سه بخشِ زمینه و سپس سرودهای ادیسه آمده‌اند. بخش‌های زمینه سرودهای هومر نیستند؛ جای اشاره‌های ادیسه و روایت‌های دیگر در هر بخش مشخص شده است.</p><p><a class="text-link" href="${SITE_BASE}background/">پیش‌داستان‌ها و راهنمای اشاره‌ها ←</a></p></div>
     <div class="story-toolbar"><span>${progressText()}</span><a href="${SITE_BASE}voyage/" class="text-link">دیدن ترتیب سفر اودیسئوس ←</a></div>
     ${["iliad", "bridge", "odyssey"].map(work => `<section class="chapter-group" id="${work}"><div class="group-heading"><span class="group-mark ${work}">${work === "iliad" ? "Ⅰ" : work === "bridge" ? "◇" : "Ⅱ"}</span><div><span class="eyebrow">${work === "bridge" ? "مرز روایت‌ها" : "۲۴ سرود"}</span><h2>${WORK_NAMES[work]}</h2></div></div><div class="chapter-list">${chapters.filter(c => c.work === work).map(c => chapterRow(c)).join("")}</div></section>`).join("")}
   </div>`;
@@ -254,16 +261,16 @@ function renderChapter(c) {
   const next = chapters[index + 1];
   const place = placeById.get(c.place);
   const source = sourceLink(c);
-  const guide = readingGuides[c.id];
   const relatedQuestions = questions.filter(q => q.chapterId === c.id);
   return `<div class="reader-shell"><div class="reader-top"><a class="back-link" href="${SITE_BASE}story/">→ فهرست داستان</a><div class="reader-count">بخش ${faNum(index + 1)} از ${faNum(chapters.length)}</div></div>
     <div class="reader-layout"><aside class="reader-sidebar"><div class="sidebar-label">مسیر خواندن</div>${["iliad", "bridge", "odyssey"].map(work => `<div class="sidebar-group"><h3>${WORK_NAMES[work]}</h3>${chapters.filter(item => item.work === work).map(item => `<a href="${chapterHref(item)}" class="sidebar-item ${item.id === c.id ? "current" : ""}" ${item.id === c.id ? 'aria-current="page"' : ""}><span>${item.work === "bridge" ? "◇" : faNum(item.number)}</span>${escapeHtml(item.title)}${readChapters.has(item.id) ? '<i aria-label="خوانده‌شده">✓</i>' : ""}</a>`).join("")}</div>`).join("")}</aside>
     <article class="reader-article"><div class="chapter-kicker">${smallBadge(WORK_NAMES[c.work], c.work)}<span>${chapterLabel(c)}</span></div><h1>${escapeHtml(c.title)}</h1>
-      ${guide ? `<section class="reading-guide" aria-label="راهنمای شروع این سرود"><h2>قبل از خواندن این سرود</h2><div class="guide-step"><strong>پیش از این چه شده؟</strong><p>${renderAnnotated(guide.before)}</p></div><div class="guide-step"><strong>حالا کجای داستانیم؟</strong><p>${renderAnnotated(guide.scene)}</p></div><div class="guide-step"><strong>فعلاً چه چیزی را دنبال کنم؟</strong><p>${renderAnnotated(guide.focus)}</p></div></section>` : ""}
+      ${renderReadingGuide(c.id, renderAnnotated)}
+      ${renderChapterBackgrounds(c.id, SITE_BASE)}
       <p class="chapter-lead">${renderAnnotated(c.recap)}</p>
       <div class="insight-box"><span class="insight-icon" aria-hidden="true">✦</span><div><h2>چرا این بخش مهم است؟</h2><p>${renderAnnotated(c.why)}</p></div></div>
       ${c.work === "bridge" ? `<div class="source-note"><strong>این روایت از کجاست؟</strong><p>${renderAnnotated(bridgeNotes[c.id])}</p></div>` : ""}
-      <section class="reader-section"><h2>چه کسانی در این بخش‌اند؟</h2><div class="people-chips">${c.characters.map(id => {const person = characterById.get(id); return `<a href="${characterHref(person)}" class="person-chip">${escapeHtml(person.name)} <span aria-hidden="true">↖</span></a>`;}).join("")}</div></section>
+      ${renderChapterNames(c.id, SITE_BASE)}
       <section class="reader-section"><h2>کجا هستیم؟</h2><div class="place-card"><span class="place-pin" aria-hidden="true">⌖</span><div><strong><a href="${placeHref(place)}">${escapeHtml(place.name)} ↖</a></strong><p>${renderAnnotated(place.bio)}</p></div></div></section>
       ${relatedQuestions.length ? `<section class="reader-section"><h2>اگر این سؤال را داری…</h2>${relatedQuestions.map(q => `<details class="faq-item"><summary>${escapeHtml(q.question)}</summary><p>${renderAnnotated(q.answer)}</p></details>`).join("")}</section>` : `<section class="reader-section"><h2>برای به‌خاطر سپردن</h2><details class="faq-item"><summary>چرا «${escapeHtml(c.title)}» در داستان مهم است؟</summary><p>${renderAnnotated(c.why)}</p></details></section>`}
       <div class="source-line"><span>جایگاه در روایت: ${escapeHtml(c.source.replace(/\d+/g, number => faNum(Number(number))))}</span>${source ? `<a href="${source}" target="_blank" rel="noopener noreferrer">${c.work === "bridge" ? "دیدن اشاره در ادیسه ↗" : "دیدن متن مرجع ↗"}</a>` : ""}</div>
@@ -278,8 +285,8 @@ function renderPeople() {
 }
 
 function renderPerson(person) {
-  const appearances = chapters.filter(c => c.characters.includes(person.id));
-  return `<div class="page-shell person-detail"><a class="back-link" href="${SITE_BASE}characters/">→ همهٔ شخصیت‌ها</a><div class="person-hero"><span class="person-big-monogram" aria-hidden="true">${escapeHtml(person.name[0])}</span><div><span class="eyebrow">${escapeHtml(person.group)}</span><h1>${escapeHtml(person.name)} <bdi class="person-english" lang="en">(${escapeHtml(person.englishName)})</bdi></h1><p>${escapeHtml(person.bio)}</p>${person.aliases.length ? `<div class="aliases">نام‌های دیگر: ${person.aliases.map(escapeHtml).join("، ")}</div>` : ""}</div></div><div class="person-profile-content">${renderProfileGraph(person.id, SITE_BASE)}<section class="person-appearances"><h2>در کدام بخش‌ها نامش آمده؟</h2><div class="chapter-list compact">${appearances.map(chapterRow).join("")}</div></section></div></div>`;
+  const appearances = chapters.filter(c => namesForChapter(c.id).some(entry => entry.id === person.id));
+  return `<div class="page-shell person-detail"><a class="back-link" href="${SITE_BASE}characters/">→ همهٔ شخصیت‌ها</a><div class="person-hero"><span class="person-big-monogram" aria-hidden="true">${escapeHtml(person.name[0])}</span><div><span class="eyebrow">${escapeHtml(person.group)}</span><h1>${escapeHtml(person.name)} <bdi class="person-english" lang="en">(${escapeHtml(person.englishName)})</bdi></h1><p>${escapeHtml(person.bio)}</p>${renderNameAliases(person.id)}</div></div><div class="person-profile-content">${renderProfileGraph(person.id, SITE_BASE)}${renderRelatedBackgrounds(person.id, SITE_BASE)}<section class="person-appearances"><h2>در کدام بخش‌ها نامش آمده؟</h2><div class="chapter-list compact">${appearances.map(chapterRow).join("")}</div></section></div></div>`;
 }
 
 function renderPlace(place) {
@@ -289,8 +296,8 @@ function renderPlace(place) {
 
 function renderTerm(term) {
   const questionChapters = new Set(questions.filter(q => `${q.question} ${q.answer}`.includes(term.name)).map(q => q.chapterId));
-  const appearances = chapters.filter(c => questionChapters.has(c.id) || `${c.title} ${c.recap} ${c.why} ${Object.values(readingGuides[c.id] || {}).join(" ")}`.includes(term.name));
-  return `<div class="page-shell place-detail"><a class="back-link" href="${SITE_BASE}story/">→ فهرست داستان</a><div class="place-hero"><span class="eyebrow">نام و مفهوم</span><h1>${escapeHtml(term.name)}</h1><p>${escapeHtml(term.description)}</p></div>${appearances.length ? `<section class="place-appearances"><h2>در کدام بخش‌ها نامش آمده؟</h2><div class="chapter-list compact">${appearances.map(chapterRow).join("")}</div></section>` : ""}</div>`;
+  const appearances = chapters.filter(c => questionChapters.has(c.id) || namesForChapter(c.id).some(entry => entry.id === term.id) || `${c.title} ${c.recap} ${c.why} ${Object.values(readingGuides[c.id] || {}).join(" ")}`.includes(term.name));
+  return `<div class="page-shell place-detail"><a class="back-link" href="${SITE_BASE}story/">→ فهرست داستان</a><div class="place-hero"><span class="eyebrow">نام و مفهوم</span><h1>${escapeHtml(term.name)}</h1>${renderNameAliases(term.id)}<p>${escapeHtml(term.description)}</p></div>${renderRelatedBackgrounds(term.id, SITE_BASE)}${appearances.length ? `<section class="place-appearances"><h2>در کدام بخش‌ها نامش آمده؟</h2><div class="chapter-list compact">${appearances.map(chapterRow).join("")}</div></section>` : ""}</div>`;
 }
 
 function renderGraph(id, focusId) {
@@ -319,14 +326,15 @@ function search(query) {
   const terms = q.split(" ").filter(Boolean);
   const items = [
     ...chapters.map(c => ({type: "بخش داستان", title: c.title, subtitle: `${WORK_NAMES[c.work]} · ${chapterLabel(c)}`, body: `${c.title} ${c.recap} ${c.why} ${c.source} ${Object.values(readingGuides[c.id] || {}).join(" ")} ${c.characters.map(id => characterById.get(id)?.name).join(" ")}`, href: chapterHref(c)})),
-    ...characters.map(c => ({type: "شخصیت", title: c.name, subtitle: c.group, body: `${c.name} ${c.aliases.join(" ")} ${c.bio}`, href: characterHref(c)})),
-    ...places.map(place => ({type: "جا", title: place.name, subtitle: "جای داستان", body: `${place.name} ${place.bio}`, href: placeHref(place)})),
-    ...extraGlossary.filter(term => !term.characterId && !term.placeId).map(term => ({type: "نام و مفهوم", title: term.name, subtitle: "واژه‌نامه", body: `${term.name} ${term.description}`, href: termHref(term)})),
+    ...readingNames.filter(person => !person.placeId).map(person => ({type: person.kind === "person" ? "شخصیت" : "نام و عنوان", title: person.name, subtitle: `${person.aliases.slice(0, 4).join("، ")} · ${person.description}`, body: `${person.name} ${person.englishName} ${person.aliases.join(" ")} ${person.aliases.map(alias=>normalize(alias).replaceAll(" ", "")).join(" ")} ${person.description}`, nameKeys: [person.name, person.englishName, ...person.aliases].map(normalize), href: `${SITE_BASE}${person.path}`})),
+    ...places.map(place => ({type: "جا", title: place.name, subtitle: "جای داستان", body: `${place.name} ${place.bio} ${readingNames.filter(person=>person.placeId === place.id).flatMap(person=>[person.name,...person.aliases]).join(" ")}`, href: placeHref(place)})),
+    ...backgrounds.map(story => ({type: "پیش‌داستان", title: story.title, subtitle: story.lead, body: `${story.title} ${story.lead} ${story.parts.map(part=>part.text).join(" ")} ${story.people.map(id=>readingNameById.get(id)?.aliases.join(" ")||"").join(" ")}`, href: `${SITE_BASE}background/${story.id}/`})),
     ...questions.map(q => ({type: "پرسش", title: q.question, subtitle: q.answer, body: `${q.question} ${q.answer}`, href: chapterHref(chapterById.get(q.chapterId))}))
   ];
   return items.map(item => {
     const title = normalize(item.title), body = normalize(item.body);
-    const score = terms.reduce((sum, term) => sum + (title.includes(term) ? 5 : 0) + (body.includes(term) ? 1 : 0), 0);
+    const exactName = item.nameKeys?.some(key => key.replaceAll(" ", "") === q.replaceAll(" ", ""));
+    const score = (exactName ? 30 : 0) + terms.reduce((sum, term) => sum + (title.includes(term) ? 5 : 0) + (body.includes(term) ? 1 : 0), 0);
     return {...item, score};
   }).filter(item => item.score && terms.every(term => normalize(item.body).includes(term))).sort((a,b) => b.score - a.score).slice(0, 12);
 }

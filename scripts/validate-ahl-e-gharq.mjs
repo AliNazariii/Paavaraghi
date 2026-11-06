@@ -74,7 +74,7 @@ for (const file of pages) {
   const relative = file.slice(root.length + 1).replace(/index\.html$/, '');
   const pageUrl = new URL(relative, SITE_URL);
   assert(html.includes('<html lang="fa" dir="rtl">'), `Missing RTL metadata: ${relative}`);
-  assert(!/<details\b[^>]*\bopen\b/.test(html), `Spoilers open by default: ${relative}`);
+
   const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
   assert.equal(new Set(ids).size, ids.length, `Duplicate element IDs: ${relative}`);
   for (const [, raw] of html.matchAll(/(?:href|src)="([^"]+)"/g)) {
@@ -94,7 +94,7 @@ for (const file of pages) {
 for (const chapter of chapters) {
   const html = await htmlAt(join(bookRoot, 'chapters', String(chapter.number), 'index.html'));
   assert(html.includes(`data-mark-read="${chapter.id}"`));
-  assert(html.includes('<details class="spoiler" id="after">'));
+  assert(html.includes('<details class="spoiler" id="after" open>'));
 }
 const fontCss = await readFile(join(bookRoot, 'fonts/font.css'), 'utf8');
 for (const [, filename] of fontCss.matchAll(/url\(([^)]+)\)/g)) await stat(join(bookRoot, 'fonts', filename));

@@ -26,25 +26,27 @@ The guide covers all 24 books of each poem, in order. For each book you get:
 - links to the people and places involved
 - a link to the reference text in the Perseus Digital Library
 
+Each section also explains its narrative time, connects references to 23 background dossiers, and lists important names with translation variants. The existing search accepts Persian translation variants and Greek/Roman name forms, including English and French spellings, with normalized spelling. Backgrounds distinguish Homer’s text from later traditions and link back to the sections that use them.
+
 It also has character and place pages, a character graph, Odysseus's voyage in the order the events happen, short introductions to the Trojan War and to how the two poems differ, search, and reading progress saved in your browser.
 
 Three context pages bridge the end of the *Iliad* and the start of the *Odyssey*. They are marked as background, not as part of Homer's text. Material from other Trojan War traditions is labelled the same way.
 
 ### Salinger: *Franny and Zooey*
 
-The guide follows the book's two original stories, *Franny* and *Zooey*. Each has a before-reading introduction, prompts to follow while reading, and a closed disclosure with a brief recap and discussion of the ending. There are also family and character notes, reading themes, and a source bibliography. The notes are independent of page numbers and translations; they do not invent chapter divisions.
+The guide follows the book's two original stories, *Franny* and *Zooey*. Each has a before-reading introduction, prompts to follow while reading, and a brief recap and discussion of the ending, shown by default. There are also family and character notes, reading themes, and a source bibliography. The notes are independent of page numbers and translations; they do not invent chapter divisions.
 
 This guide has its own paper-and-burgundy design. The pages and spoiler disclosures work without JavaScript. With JavaScript, readers can mark either story as read; progress is stored only in their browser, separately from the Homer guide.
 
 ### Ravanipour: *Ahl-e Gharq (The Drowned)*
 
-The guide follows all 34 numbered chapters of the Khaneh Aftab second printing (winter 1369), with original chapter labels and four editorial reading paths. Each chapter has a before-reading note, a question, and a closed disclosure containing its recap and interpretation. The forty pages also include 18 character profiles, 16 local words and motifs, seven critical discussions, and an annotated bibliography that distinguishes the reference scan from later editions.
+The guide follows all 34 numbered chapters of the Khaneh Aftab second printing (winter 1369), with original chapter labels and four editorial reading paths. Each chapter has a before-reading note, a question, and its recap and interpretation shown by default. The forty pages also include 18 character profiles, 16 local words and motifs, seven critical discussions, and an annotated bibliography that distinguishes the reference scan from later editions.
 
 The sea-and-paper design includes original artwork and locally served Vazirmatn fonts (SIL Open Font License, included with the font files). Content and disclosures work without JavaScript. Optional chapter search accepts Persian and Arabic digits and letter variants; reading progress stays in the browser under its own book-specific key. The novel and research scan are not redistributed.
 
 ### Golshiri: *Nimeye Tarik-e Mah (The Dark Half of the Moon)*
 
-The guide follows the 36 stories in the Niloofar first printing (spring 1380), with a searchable index, original before-reading notes, closed short recaps, discussion questions, five editorial reading themes, and an annotated source page. Titles, order, page references, and dates were checked against a research scan; the source page explains date and spelling discrepancies in web lists. Recaps are brief reading aids rather than exhaustive plot summaries. The scan is not redistributed.
+The guide follows the 36 stories in the Niloofar first printing (spring 1380), with a searchable index, original before-reading notes, short recaps shown by default, discussion questions, five editorial reading themes, and an annotated source page. Titles, order, page references, and dates were checked against a research scan; the source page explains date and spelling discrepancies in web lists. Recaps are brief reading aids rather than exhaustive plot summaries. The scan is not redistributed.
 
 The indigo-and-paper guide uses the existing local Vazirmatn fonts. Search normalizes Persian/Arabic letters and digits. Story progress is saved only in the browser under a separate book key; content and spoiler disclosures work without JavaScript.
 

@@ -20,7 +20,7 @@ for(const s of stories){
   assert.ok(s.endPage>=s.page);
   assert.ok(s.tags.every(tag=>themes.some(t=>t.title===tag)));
   const html=await readFile(join(root,'stories',s.id,'index.html'),'utf8');
-  assert.match(html,/<details class="spoiler" id="after">/,'Recaps must start closed');
+  assert.match(html,/<details class="spoiler" id="after" open>/,'Recaps must be visible on arrival');
   assert.ok(html.includes(s.recap));
   assert.ok(html.includes(`data-mark-read="${s.id}"`));
   assert.ok(html.includes(new URL(`nimeye-tarik-e-mah/stories/${s.id}/`,SITE_URL).href));
@@ -33,4 +33,4 @@ const home=await readFile(join(docsRoot,'index.html'),'utf8');
 assert.ok(home.includes('نیمهٔ تاریک ماه'));
 const client=await readFile(join(root,'app.js'),'utf8');
 assert.ok(client.includes('paavaraghi:nimeye-tarik-e-mah:read:v1'));
-console.log('Validated Nimeye Tarik-e Mah: 36 stories, closed recaps, source references, themes and guide assets.');
+console.log('Validated Nimeye Tarik-e Mah: 36 stories, visible recaps, source references, themes and guide assets.');
